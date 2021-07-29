@@ -24,9 +24,9 @@ __license__ = "MIT"
 
 logger = logging.getLogger(__name__)
 
-def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root, 
-                        dem_dirpath=None, working_dirpath_root=None, 
-                        clean=True, upload_outputs=True):
+def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
+                       dem_dirpath=None, working_dirpath_root=None,
+                       clean=True, upload_outputs=True):
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
 
