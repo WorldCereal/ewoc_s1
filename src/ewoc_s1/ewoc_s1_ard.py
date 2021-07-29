@@ -16,7 +16,8 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
                    out_dirpath,
                    s1_prd_info, 
                    s2_tile_id,
-                   rename_only=False):
+                   rename_only=False,
+                   clean_input_file=False):
     
     orbit_direction = 'DES' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
     relative_orbit= 'TODO' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
@@ -63,7 +64,6 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
         ewoc_gdal_dtype = 'uint16'
         ewoc_nodata = 0
 
-        clean_input_file=True
         to_ewoc_s1_raster(s1_process_output_filepath_vv, ewoc_output_filepath_vv)
         to_ewoc_s1_raster(s1_process_output_filepath_vh, ewoc_output_filepath_vh)
         if clean_input_file:
