@@ -3,9 +3,11 @@ import argparse
 import logging
 from pathlib import Path
 import sys
+import shutil
 
+from dataship.dag.s3man import get_s3_client, recursive_upload_dir_to_s3
 from dataship.dag.utils import get_product_by_id
-from s1tiling.S1Processor import main as s1_process
+from s1tiling.S1Processor import clean_logs, main as s1_process
 
 from ewoc_s1 import __version__
 from ewoc_s1.s1_prd_id import S1PrdIdInfo
@@ -16,16 +18,33 @@ __author__ = "Mickael Savinaud"
 __copyright__ = "Mickael Savinaud"
 __license__ = "MIT"
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-def generate_s1_ard_id(s1_prd_ids, s2_tile_id, out_dirpath, conf_filepath,  dem_dirpath=None, working_dirpath_root=None):
+
+
+def generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath, conf_filepath,
+                        dem_dirpath=None, working_dirpath=None, clean_output=False, upload_outputs=True, clean_input_dir=False):
+
+    logger.info('Product ids: %s', s1_prd_ids)
+    logger.info('s2_tile_id: %s', s2_tile_id)
+    logger.info('out_dirpath: %s', out_dirpath)
+    logger.info('dem_dirpath: %s', dem_dirpath)
+    logger.info('working_dirpath: %s', working_dirpath)
+
+
+def generate_s1_ard_id(s1_prd_ids, s2_tile_id, out_dirpath_root, conf_filepath,  
+                        dem_dirpath=None, working_dirpath_root=None, clean_output=False, upload_outputs=True, clean_input_dir=False):
     working_dirpath = working_dirpath_root / 'ewoc_s1'
     working_dirpath.mkdir(exist_ok=True)
-    _logger.info('Product ids: %s', s1_prd_ids)
-    _logger.info('s2_tile_id: %s', s2_tile_id)
-    _logger.info('out_dirpath: %s', out_dirpath)
-    _logger.info('dem_dirpath: %s', dem_dirpath)
-    _logger.info('working_dirpath: %s', working_dirpath)
+
+    out_dirpath = out_dirpath_root / 'ewoc_s1_ard'
+    out_dirpath.mkdir(exist_ok=True)
+
+    logger.info('Product ids: %s', s1_prd_ids)
+    logger.info('s2_tile_id: %s', s2_tile_id)
+    logger.info('out_dirpath: %s', out_dirpath)
+    logger.info('dem_dirpath: %s', dem_dirpath)
+    logger.info('working_dirpath: %s', working_dirpath)
 
     s1_input_dir = working_dirpath /'input'
     s1_input_dir.mkdir(exist_ok=True)
@@ -35,13 +54,20 @@ def generate_s1_ard_id(s1_prd_ids, s2_tile_id, out_dirpath, conf_filepath,  dem_
             s1_prd_safe_dirpath = s1_input_dir / s1_prd_id
             s1_prd_wsafe_dirpath =  s1_input_dir / s1_prd_safe_dirpath.stem
             if not s1_prd_wsafe_dirpath.exists():
-                get_product_by_id(s1_prd_id, s1_input_dir, 'creodias', config_file=conf_filepath)
+                try:
+                    get_product_by_id(s1_prd_id, s1_input_dir, 'creodias', config_file=conf_filepath)
+                except:
+                    logger.error('No product have been retrieve for %s', s1_prd_id)
+                    continue
                 s1_prd_safe_dirpath.rename(s1_prd_wsafe_dirpath)
             else:
-                _logger.info('S1 prd %s is already available on disk', s1_prd_id)
+                logger.info('S1 prd %s is already available on disk', s1_prd_id)
         else:
-            _logger.warning('S1 prd id %s is not valid!', s1_prd_id)
+            logger.warning('S1 prd id %s is not valid!', s1_prd_id)
 
+    
+    output_s1process_dirpath = out_dirpath / 's1process'
+    output_s1process_dirpath.mkdir(exist_ok=True)
     s1_process.callback(20, False, False, False, False, False, 
                         to_s1tiling_configfile(out_dirpath, 
                                                s1_input_dir, 
@@ -49,11 +75,32 @@ def generate_s1_ard_id(s1_prd_ids, s2_tile_id, out_dirpath, conf_filepath,  dem_
                                                working_dirpath, 
                                                s2_tile_id))
 
-    to_ewoc_s1_ard( out_dirpath / s2_tile_id, out_dirpath, 
-                    S1PrdIdInfo(s1_prd_ids[0]), s2_tile_id, 
-                    rename_only=False)
+    # If sucess of s1process remove the input dir
+    if clean_input_dir:
+        shutil.rmtree(s1_input_dir)
+        s1_input_dir.rmdir()
 
-    # TODO Push to bucket if requested
+    out_dirpath_tile_id = out_dirpath / s2_tile_id
+    clean_s1_process_output = True
+    to_ewoc_s1_ard( out_dirpath_tile_id, out_dirpath, 
+                    S1PrdIdInfo(s1_prd_ids[0]), s2_tile_id, 
+                    rename_only=False, clean_input_file=clean_s1_process_output)
+    
+    # if sucess of format output, remove the s1 process output dir
+    if clean_s1_process_output:
+        shutil.rmtree(out_dirpath_tile_id)
+        out_dirpath_tile_id.rmdir()
+
+    logger.info('Push %s to bucket', out_dirpath)
+    recursive_upload_dir_to_s3( get_s3_client(), 
+                                str(out_dirpath) + '/', 
+                                'WORLDCEREAL_PREPROC/test_upload/', 
+                                bucketname="world-cereal")
+
+    # if sucess remove the previous output
+    if clean_output:
+        logger.info('Remove %s', out_dirpath)
+        shutil.rmtree(out_dirpath)
 
 
 # ---- CLI ----
@@ -127,10 +174,10 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
-    _logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...", args.s1_prd_ids, args.s2_tile_id)
+    logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...", args.s1_prd_ids, args.s2_tile_id)
     generate_s1_ard_id(args.s1_prd_ids, args.s2_tile_id, args.out_dirpath, args.conf_filepath,
                             args.dem_dirpath, args.working_dirpath)
-    _logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!", args.s1_prd_ids, args.s2_tile_id)
+    logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!", args.s1_prd_ids, args.s2_tile_id)
 
 
 def run():

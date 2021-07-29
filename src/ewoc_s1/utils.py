@@ -23,8 +23,8 @@ def to_s1tiling_configfile(out_dirpath, s1_input_dirpath, dem_dirpath, working_d
                             'tiles': s2_tile_id,
                             'tile_to_product_overlap_ratio' : 0.5,
                             'nb_parallel_processes' : 2,
-                            'ram_per_process' : 8096,
-                            'nb_otb_threads': 4,
+                            'ram_per_process' : 4096,
+                            'nb_otb_threads': 2,
                             }
 
     config['DataSource'] = {'download' : False,
