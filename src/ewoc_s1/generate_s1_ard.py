@@ -44,6 +44,8 @@ def generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
 
     for s1_prd_id in s1_prd_ids:
         if S1PrdIdInfo.is_valid(s1_prd_id):
+            if len(s1_prd_id.split('.'))==1:
+                s1_prd_id = s1_prd_id + '.SAFE'
             s1_prd_safe_dirpath = s1_input_dir / s1_prd_id
             s1_prd_wsafe_dirpath =  s1_input_dir / s1_prd_safe_dirpath.stem
             if not s1_prd_wsafe_dirpath.exists():
