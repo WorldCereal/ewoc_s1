@@ -6,17 +6,9 @@ import shutil
 import sys
 import tempfile
 
-from dataship.dag.utils import get_product_by_id
-from dataship.dag.s3man import recursive_upload_dir_to_s3, get_s3_client
-
-from s1tiling.S1Processor import main as s1_process
-
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard
-
-from ewoc_s1.s1_prd_id import S1PrdIdInfo
-from ewoc_s1.ewoc_s1_ard import to_ewoc_s1_ard
-from ewoc_s1.utils import EwocWorkPlanReader, to_s1tiling_configfile
+from ewoc_s1.utils import EwocWorkPlanReader
 
 __author__ = "Mickael Savinaud"
 __copyright__ = "Mickael Savinaud"
@@ -54,8 +46,6 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 
             if clean:
                 shutil.rmtree(wd_dirpath_tile_date)
-
-
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
