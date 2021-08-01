@@ -1,9 +1,8 @@
-
 import logging
 import shutil
 
 from dataship.dag.s3man import get_s3_client, recursive_upload_dir_to_s3
-from dataship.dag.utils import get_product_by_id
+from dataship.dag.utils import get_s1_product_by_id
 from s1tiling.S1Processor import main as s1_process
 
 from ewoc_s1 import __version__
@@ -50,7 +49,7 @@ def generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
             s1_prd_wsafe_dirpath =  s1_input_dir / s1_prd_safe_dirpath.stem
             if not s1_prd_wsafe_dirpath.exists():
                 try:
-                    get_product_by_id(s1_prd_id, s1_input_dir, 'creodias')
+                    get_s1_product_by_id(s1_prd_id, s1_input_dir, 'creodias')
                 except:
                     logger.error('No product download for %s', s1_prd_id)
                     continue
