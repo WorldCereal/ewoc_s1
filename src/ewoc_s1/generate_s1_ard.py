@@ -11,7 +11,7 @@ from s1tiling.S1Processor import main as s1_process
 from ewoc_s1 import __version__
 from ewoc_s1.s1_prd_id import S1PrdIdInfo
 from ewoc_s1.ewoc_s1_ard import to_ewoc_s1_ard
-from ewoc_s1.utils import to_s1tiling_configfile
+from ewoc_s1.utils import ClusterConfig, to_s1tiling_configfile
 
 __author__ = "Mickael Savinaud"
 __copyright__ = "Mickael Savinaud"
@@ -70,7 +70,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                                                    s1_input_dir, 
                                                    dem_dirpath, 
                                                    wd_s1process_dirpath_root, 
-                                                   s2_tile_id))
+                                                   s2_tile_id, ClusterConfig(len(s1_prd_ids))))
     except:
         logger.error('S1 process failed!')
         return
