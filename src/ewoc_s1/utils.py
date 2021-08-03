@@ -1,8 +1,12 @@
 import configparser
 import json
+import logging
+from pathlib import Path
+from typing import Dict, List
 
 from ewoc_s1.s1_prd_id import S1PrdIdInfo
 
+logger = logging.getLogger(__name__)
 
 def to_s1tiling_configfile(out_dirpath, s1_input_dirpath, dem_dirpath, working_dirpath, s2_tile_id):
 # TODO manage processing parameters
@@ -43,7 +47,7 @@ def to_s1tiling_configfile(out_dirpath, s1_input_dirpath, dem_dirpath, working_d
 class EwocWorkPlanReader():
     PROD_TYPE = {"S2":"S2_PROC","L8":"L8_PROC","S1":"SAR_PROC"}    
 
-    def __init__(self, workplan_filepath) -> None:
+    def __init__(self, workplan_filepath: Path) -> None:
         with open(workplan_filepath) as f:
             self._wp = json.load(f)
         
@@ -51,25 +55,20 @@ class EwocWorkPlanReader():
         for tile in self._wp:
             self._tile_ids.append(tile)
 
-        # split name to retrieve start_date and end_date
-
     @property
-    def tile_ids(self):
+    def tile_ids(self)-> List[str]:
         return self._tile_ids
 
-    def get_s1_prd_ids(self, tile_id):
+    def get_s1_prd_ids(self, tile_id:str)-> List[str]:
         if tile_id in self._tile_ids:
             return self._wp[tile_id]['SAR_PROC']['INPUTS']
         else:
             return None
     
-    def get_s1_prd_ids_by_date(self, tile_id):
+    def get_s1_prd_ids_by_date(self, tile_id: str)-> Dict:
         prd_ids = self.get_s1_prd_ids(tile_id)
         out = dict()
         for prd_id in prd_ids:
-            date_key = str(S1PrdIdInfo(prd_id).start_time.date())
-            if date_key in out.keys():
-                out[date_key] = out.get(date_key) + [prd_id]
-            else:
-                out[date_key] = [prd_id]
+            out[str(S1PrdIdInfo(prd_id[0]).start_time.date())] = prd_id
+
         return out
