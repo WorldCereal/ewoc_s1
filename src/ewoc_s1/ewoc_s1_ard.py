@@ -10,7 +10,7 @@ __author__ = "Mickael Savinaud"
 __copyright__ = "Mickael Savinaud"
 __license__ = "Apache v2"
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 def to_ewoc_s1_ard(s1_process_output_dirpath,
                    out_dirpath,
@@ -31,8 +31,7 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
     ewoc_output_dirname= '_'.join(ewoc_output_dirname_elt)
     ewoc_output_dirpath = out_dirpath / 'SAR' / s2_tile_id[:2] / s2_tile_id[2] / s2_tile_id[3:] / \
         str(s1_prd_info.start_time.year) / s1_prd_info.start_time.date().strftime('%Y%m%d') / ewoc_output_dirname
-    #_logger.info('Create directory: %s', ewoc_output_dirpath)
-    print('Create directory: %s', ewoc_output_dirpath)
+    logger.debug('Create output directory: %s', ewoc_output_dirpath)
     ewoc_output_dirpath.mkdir(exist_ok=True, parents=True)
 
     calibration_type = 'SIGMA0' # TODO retrieve from GDAL MTD of the output s1_process file or from parameters
@@ -40,24 +39,19 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
     ewoc_output_filename_elt = ewoc_output_dirname_elt + [calibration_type]
     ewoc_output_filename_vv = '_'.join(ewoc_output_filename_elt + ['VV']) + output_file_ext
     ewoc_output_filepath_vv = ewoc_output_dirpath / ewoc_output_filename_vv
-    print(ewoc_output_filename_vv)
-    print(ewoc_output_filepath_vv)
+    logger.debug('Output VV filepath: %s', ewoc_output_filepath_vv)
     ewoc_output_filename_vh = '_'.join(ewoc_output_filename_elt + ['VH']) + output_file_ext
     ewoc_output_filepath_vh = ewoc_output_dirpath / ewoc_output_filename_vh
-    print(ewoc_output_filename_vh)
-    print(ewoc_output_filepath_vh)
+    logger.debug('Output VH filepath: %s', ewoc_output_filepath_vh)
 
     # TODO provide a more strict regex
     s1_process_output_filepath_vv = sorted(s1_process_output_dirpath.glob('*vv*.tif'))[0]
     s1_process_output_filepath_vh = sorted(s1_process_output_dirpath.glob('*vh*.tif'))[0]
-    print(s1_process_output_filepath_vv)
-    print(s1_process_output_filepath_vh)
 
     if rename_only:
         s1_process_output_filepath_vv.rename(ewoc_output_filepath_vv)
         s1_process_output_filepath_vh.rename(ewoc_output_filepath_vh)
     else:
-        # TODO Convert to ewoc ARD raster format with db conversion
         # TODO manage the difference between 0 values and no data value (currently set to 0)
         ewoc_gdal_blocksize_20m = [512, 512]
         ewoc_gdal_compress_method = 'deflate'
@@ -85,12 +79,12 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     if compress:
         ewoc_output_filepath_vv_otb +="&gdal:co:COMPRESS=DEFLATE"
 
-    _logger.debug(ewoc_output_filepath_vv_otb)
+    logger.debug(ewoc_output_filepath_vv_otb)
     app.SetParameterString("out", str(ewoc_output_filepath_vv_otb))
     app.SetParameterOutputImagePixelType("out", otb.ImagePixelType_uint16)
 
     otb_exp = "im1b1==" + str(nodata_in) + "?" + str(nodata_out) + ":10.*((10.*log10(im1b1)+83.)/20.)"
-    _logger.debug(otb_exp)
+    logger.debug(otb_exp)
     app.SetParameterString("exp", otb_exp)
     
     app.ExecuteAndWriteOutput()

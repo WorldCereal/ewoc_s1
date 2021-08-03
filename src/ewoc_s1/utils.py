@@ -84,8 +84,6 @@ class EwocWorkPlanReader():
 
         return out
 
-
-
 class ClusterConfig():
     def __init__(self, nb_products:int) -> None:
 
