@@ -31,7 +31,8 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
                 len(wp_reader.tile_ids), wp_reader.tile_ids)
 
     for s2_tile_id in wp_reader.tile_ids:
-        logger.info('Generate ARD for S2 tile: %s!', s2_tile_id)
+        logger.info('Generate %s ARD for the S2 tile: %s!', wp_reader.get_nb_s1_prd(s2_tile_id),
+                                                            s2_tile_id)
 
         wd_dirpath_tile = working_dirpath / s2_tile_id
         wd_dirpath_tile.mkdir(exist_ok=True, parents=True)

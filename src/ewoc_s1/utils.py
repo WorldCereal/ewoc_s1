@@ -59,6 +59,12 @@ class EwocWorkPlanReader():
     def tile_ids(self)-> List[str]:
         return self._tile_ids
 
+    def get_nb_s1_prd(self, tile_id:str)->int:
+        if tile_id in self._tile_ids:
+            return len(self._wp[tile_id]['SAR_PROC']['INPUTS'])
+        else:
+            return 0
+
     def get_s1_prd_ids(self, tile_id:str)-> List[str]:
         if tile_id in self._tile_ids:
             return self._wp[tile_id]['SAR_PROC']['INPUTS']
