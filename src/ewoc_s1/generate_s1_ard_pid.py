@@ -6,6 +6,8 @@ import sys
 import shutil
 import tempfile
 
+from dataship.dag.utils import get_srtm1s
+
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard
 
@@ -25,6 +27,11 @@ def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_pid'
     working_dirpath.mkdir(exist_ok=True)
+
+    if dem_dirpath is None:
+        dem_dirpath = working_dirpath / 'dem' / s2_tile_id
+        dem_dirpath.mkdir(exist_ok=True, parents=True)
+        get_srtm1s(s2_tile_id, dem_dirpath)
 
     generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,  
                     dem_dirpath, working_dirpath, 

@@ -6,6 +6,8 @@ import shutil
 import sys
 import tempfile
 
+from dataship.dag.utils import get_srtm1s
+
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard
 from ewoc_s1.utils import EwocWorkPlanReader
@@ -34,6 +36,11 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         wd_dirpath_tile = working_dirpath / s2_tile_id
         wd_dirpath_tile.mkdir(exist_ok=True, parents=True)
 
+        if dem_dirpath is None:
+            dem_dirpath = working_dirpath / 'dem'
+            dem_dirpath.mkdir(exist_ok=True, parents=True)
+            get_srtm1s(s2_tile_id, dem_dirpath)
+
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
             logger.info('%s will be process for %s!', s1_prd_ids, date_key)
 
@@ -46,6 +53,10 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 
             if clean:
                 shutil.rmtree(wd_dirpath_tile_date)
+        if clean:
+            shutil.rmtree(wd_dirpath_tile)
+    if clean:
+        shutil.rmtree(working_dirpath)
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python

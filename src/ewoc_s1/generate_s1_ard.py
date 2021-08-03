@@ -1,9 +1,12 @@
 import logging
+from pathlib import Path
 import shutil
+from typing import List
 
 from dataship.dag.s3man import get_s3_client, recursive_upload_dir_to_s3
 from dataship.dag.utils import get_s1_product_by_id
 from s1tiling.S1Processor import main as s1_process
+
 
 from ewoc_s1 import __version__
 from ewoc_s1.s1_prd_id import S1PrdIdInfo
@@ -16,14 +19,12 @@ __license__ = "MIT"
 
 logger = logging.getLogger(__name__)
 
-def generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
-                    dem_dirpath, working_dirpath,
-                    clean=True, upload_outputs=True):
+def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Path,
+                    dem_dirpath: Path, working_dirpath: Path,
+                    clean: bool=True, upload_outputs: bool=True):
 
     """ Generate S1 ARD from the products identified by their product id for the S2 tile id
     """
-
-    # TODO: manage strm1s tile needed for the s2 tile and download them if needed
 
     out_dirpath = out_dirpath_root / 'ewoc_s1_ard'
     out_dirpath.mkdir(exist_ok=True)
@@ -59,7 +60,6 @@ def generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
         else:
             logger.warning('S1 prd id %s is not valid!', s1_prd_id)
 
-    # TODO check if the input dir is empty (no sucessful download)
     if not any(s1_input_dir.iterdir()):
         logger.error('No S1 products downloaded!')
         return
