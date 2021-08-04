@@ -64,7 +64,7 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
             s1_process_output_filepath_vv.unlink()
             s1_process_output_filepath_vh.unlink()
 
-def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_in=0, nodata_out=65535, compress=True):
+def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_in=0, nodata_out=0, compress=True):
 
     app = otb.Registry.CreateApplication("BandMath")
     app.SetParameterStringList("il", [str(s1_process_filepath)])
