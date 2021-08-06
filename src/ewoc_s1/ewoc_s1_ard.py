@@ -68,9 +68,9 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
 
     app = otb.Registry.CreateApplication("BandMath")
     app.SetParameterStringList("il", [str(s1_process_filepath)])
-    ewoc_output_filepath_vv_otb = str(ewoc_filepath)
+    ewoc_output_filepath_vv_otb = str(ewoc_filepath) + '?'
     if nodata_in != nodata_out:
-        ewoc_output_filepath_vv_otb += "?&nodata="+ str(nodata_out) 
+        ewoc_output_filepath_vv_otb += "&nodata="+ str(nodata_out)
     
     ewoc_output_filepath_vv_otb += "&gdal:co:TILED=YES" + \
         "&gdal:co:BLOCKXSIZE=" + str(blocksize) + \
