@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def to_s1tiling_configfile(out_dirpath: Path, s1_input_dirpath: Path, dem_dirpath: Path, working_dirpath: Path, s2_tile_id: str, 
                            cluster_config,
                            calibration_method :str= 'sigma', output_spatial_resolution: int=20, remove_thermal_noise: bool=True, 
-                           ortho_interpol_method:str='linear', generate_mask: bool=False):
+                           ortho_interpol_method:str='linear', generate_mask: bool=False, log_level:int = logging.INFO):
 
     optimal_ram, optimal_nb_process, optimal_nb_otb_threads = cluster_config.compute_optimal_cluster_config()
 
@@ -23,7 +23,12 @@ def to_s1tiling_configfile(out_dirpath: Path, s1_input_dirpath: Path, dem_dirpat
                        'srtm': str(dem_dirpath),
                        'tmp': str(working_dirpath)}
 
-    config['Processing'] = {'mode' : 'debug' + ' ' + 'logging',
+    if log_level < logging.DEBUG:
+        s1_process_log_mode = 'debug' + ' ' + 'logging'
+    else:
+        s1_process_log_mode = 'Normal'
+
+    config['Processing'] = {'mode' : s1_process_log_mode,
                             'calibration': calibration_method,
                             'remove_thermal_noise': remove_thermal_noise,
                             'output_spatial_resolution' : output_spatial_resolution,
