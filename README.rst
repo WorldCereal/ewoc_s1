@@ -19,7 +19,7 @@ To generate EWoC ARD, the ewoc_s1 CLI perform the following tasks:
 
 The package provides 3 different commands:
 
-* ewoc_s1_generate_s1_ard_pid which allow to run the processing on a list of S1 product ID
+* *ewoc_s1_generate_s1_ard_pid* which allow to run the processing on a list of S1 product ID
 
 .. code-block:: bash
 
@@ -31,7 +31,7 @@ The package provides 3 different commands:
                              S1_PRD_ID_2 \
                              --dem_dirpath /path/to/srtm/dir -w /path/to/working/dir -v
 
-* ewoc_generate_s1_ard_wp which allow to run the processing with input a EWoC workplan
+* *ewoc_generate_s1_ard_wp* which allow to run the processing with input a EWoC workplan
 
 .. code-block:: bash
 
@@ -42,7 +42,7 @@ The package provides 3 different commands:
                             --dem_dirpath /path/to/srtm/dir \
                             -w /path/to/working/dir -v
 
-* **Not currently implemented** ewoc_generate_s1_ard_db which allow to run the processing with interaction with a database of S1 product to run
+* **Not currently implemented!** *ewoc_generate_s1_ard_db* which allow to run the processing with interaction with a database of S1 product to run
 
 .. code-block:: bash
 
@@ -53,8 +53,8 @@ To retrieve data from the creodias finder, ewoc_s1 CLI requests:
 
 * a eodag.yaml file with creodias credentials
 * or to set the following environements variables set with creodias credentials
- *   EODAG__CREODIAS__AUTH__CREDENTIALS__USERNAME
- *   EODAG__CREODIAS__AUTH__CREDENTIALS__PASSWORD
+ * EODAG__CREODIAS__AUTH__CREDENTIALS__USERNAME
+ * EODAG__CREODIAS__AUTH__CREDENTIALS__PASSWORD
 
 To push EWoC ARD to the desired s3 bucket, ewoc_s1 CLI requests to set the following variables:
 
