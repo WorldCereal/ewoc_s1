@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 import shutil
 from typing import List
@@ -96,8 +97,8 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         try:
             recursive_upload_dir_to_s3( get_s3_client(), 
                                         str(out_dirpath) + '/', 
-                                        'WORLDCEREAL_PREPROC/test_upload/', 
-                                        bucketname="world-cereal")
+                                        os.getenv('DEST_PREFIX', default = 'WORLDCEREAL_PREPROC/test_upload/'), 
+                                        bucketname=os.getenv('BUCKET', default='world-cereal'))
         except:
             logger.error('Push to ewoc bucket failed!')
             return
