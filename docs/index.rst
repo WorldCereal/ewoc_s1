@@ -33,6 +33,7 @@ Contents
    License <license>
    Authors <authors>
    Changelog <changelog>
+   EWoC Sentinel-1 DPM <dpm>
    Module Reference <api/modules>
 
 
