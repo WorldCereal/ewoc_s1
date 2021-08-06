@@ -27,8 +27,8 @@ The package provides 3 different commands:
 
     ewoc_generate_s1_ard_pid s2_tile_id \
                              /path/to/output/dir \
-                             S1A_IW_GRDH_1SDV_20210708T060040_20210708T060105_038682_04908E_3178.SAFE \
-                             S1A_IW_GRDH_1SDV_20210708T060105_20210708T060130_038682_04908E_8979.SAFE \
+                             S1_PRD_ID_1 \
+                             S1_PRD_ID_2 \
                              --dem_dirpath /path/to/srtm/dir -w /path/to/working/dir -v
 
 * ewoc_generate_s1_ard_wp which allow to run the processing with input a EWoC workplan
@@ -56,11 +56,11 @@ To retrieve data from the creodias finder, ewoc_s1 CLI requests:
  *   EODAG__CREODIAS__AUTH__CREDENTIALS__USERNAME
  *   EODAG__CREODIAS__AUTH__CREDENTIALS__PASSWORD
 
- To push EWoC ARD to the desired s3 bucket, ewoc_s1 CLI requests to set the following variables:
+To push EWoC ARD to the desired s3 bucket, ewoc_s1 CLI requests to set the following variables:
 
- * S3_ENDPOINT
- * S3_ACCESS_KEY_ID
- * S3_SECRET_ACCESS_KEY
+* S3_ENDPOINT
+* S3_ACCESS_KEY_ID
+* S3_SECRET_ACCESS_KEY
 
 
 .. _pyscaffold-notes:
