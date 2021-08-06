@@ -8,7 +8,7 @@ The ewoc_s1 python package provide the python cli and API to process Sentinel-1 
 Description
 ===========
 
-To generate EWoC ARD, ewoc_s1 cli performs the following tasks:
+To generate EWoC ARD, the ewoc_s1 CLI perform the following tasks:
 
 * Read or retrieve inputs S1 product ID from CLI arguments or from the worplan file or from database
 * Retrieve the SRTM 1s data from `ESA Website <http://step.esa.int/auxdata/dem/SRTMGL1/>`_ 
@@ -23,12 +23,44 @@ The package provides 3 different commands:
 
 .. code-block:: bash
 
-    ewoc_s1_generate_s1_ard_pid -h
+    ewoc_generate_s1_ard_pid -h
 
-* ewoc_s1_generate_s1_ard_wp which allow to run the processing with input a EWoC workplan
-* ewoc_s1_generate_s1_ard_db which allow to run the processing with interaction with a database of S1 product to run
+    ewoc_generate_s1_ard_pid s2_tile_id \
+                             /path/to/output/dir \
+                             S1A_IW_GRDH_1SDV_20210708T060040_20210708T060105_038682_04908E_3178.SAFE \
+                             S1A_IW_GRDH_1SDV_20210708T060105_20210708T060130_038682_04908E_8979.SAFE \
+                             --dem_dirpath /path/to/srtm/dir -w /path/to/working/dir -v
+
+* ewoc_generate_s1_ard_wp which allow to run the processing with input a EWoC workplan
+
+.. code-block:: bash
+
+    ewoc_generate_s1_ard_wp -h
+
+    ewoc_generate_s1_ard_wp /path/to/workplan.json \
+                            /path/to/output/dir \
+                            --dem_dirpath /path/to/srtm/dir \
+                            -w /path/to/working/dir -v
+
+* **Not currently implemented** ewoc_generate_s1_ard_db which allow to run the processing with interaction with a database of S1 product to run
+
+.. code-block:: bash
+
+    ewoc_generate_s1_ard_db -h
 
 
+To retrieve data from the creodias finder, ewoc_s1 CLI requests:
+
+* a eodag.yaml file with creodias credentials
+* or to set the following environements variables set with creodias credentials
+ *   EODAG__CREODIAS__AUTH__CREDENTIALS__USERNAME
+ *   EODAG__CREODIAS__AUTH__CREDENTIALS__PASSWORD
+
+ To push EWoC ARD to the desired s3 bucket, ewoc_s1 CLI requests to set the following variables:
+
+ * S3_ENDPOINT
+ * S3_ACCESS_KEY_ID
+ * S3_SECRET_ACCESS_KEY
 
 
 .. _pyscaffold-notes:
