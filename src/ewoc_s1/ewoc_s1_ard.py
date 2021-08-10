@@ -83,7 +83,7 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     app.SetParameterString("out", str(ewoc_output_filepath_vv_otb))
     app.SetParameterOutputImagePixelType("out", otb.ImagePixelType_uint16)
 
-    otb_exp = "im1b1==" + str(nodata_in) + "?" + str(nodata_out) + ":10.*((10.*log10(im1b1)+83.)/20.)"
+    otb_exp = "im1b1==" + str(nodata_in) + "?" + str(nodata_out) + ":10.^((10.*log10(im1b1)+83.)/20.)"
     logger.debug(otb_exp)
     app.SetParameterString("exp", otb_exp)
     
