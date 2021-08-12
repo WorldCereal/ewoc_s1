@@ -42,6 +42,10 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
     wd_s1process_dirpath_root = working_dirpath / 's1process'
     wd_s1process_dirpath_root.mkdir(exist_ok=True)
     output_s1process_dirpath = wd_s1process_dirpath_root / s2_tile_id
+    
+    wd_s1process_noized_dirpath_root = working_dirpath / 's1process_noized'
+    wd_s1process_noized_dirpath_root.mkdir(exist_ok=True)
+    output_s1process_noized_dirpath = wd_s1process_noized_dirpath_root / s2_tile_id
 
     for s1_prd_id in s1_prd_ids:
         if S1PrdIdInfo.is_valid(s1_prd_id):
@@ -73,7 +77,20 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                                                    wd_s1process_dirpath_root, 
                                                    s2_tile_id, ClusterConfig(len(s1_prd_ids))))
     except:
-        logger.error('S1 process failed!')
+        logger.error('S1 process denoized failed!')
+        return
+
+    try:
+        s1_process.callback(20, False, False, False, False, False, 
+                            to_s1tiling_configfile(wd_s1process_noized_dirpath_root, 
+                                                   s1_input_dir, 
+                                                   dem_dirpath, 
+                                                   wd_s1process_noized_dirpath_root, 
+                                                   s2_tile_id, 
+                                                   ClusterConfig(len(s1_prd_ids)),
+                                                   remove_thermal_noise=False))
+    except:
+        logger.error('S1 process noized failed!')
         return
     
     # If sucess of s1process remove the input dir

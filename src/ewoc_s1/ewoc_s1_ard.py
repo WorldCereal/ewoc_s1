@@ -1,4 +1,5 @@
 
+import os
 import logging
 
 from ewoc_s1 import __version__
@@ -58,19 +59,31 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
         ewoc_gdal_dtype = 'uint16'
         ewoc_nodata = 0
 
-        to_ewoc_s1_raster(s1_process_output_filepath_vv, ewoc_output_filepath_vv)
-        to_ewoc_s1_raster(s1_process_output_filepath_vh, ewoc_output_filepath_vh)
+        to_ewoc_s1_raster(s1_process_output_filepath_vv, ewoc_output_filepath_vv, nodata_in=65535, nodata_out=65535)
+        to_ewoc_s1_raster(s1_process_output_filepath_vh, ewoc_output_filepath_vh, nodata_in=65535, nodata_out=65535)
+
         if clean_input_file:
             s1_process_output_filepath_vv.unlink()
             s1_process_output_filepath_vh.unlink()
 
 def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_in=0, nodata_out=0, compress=True):
 
+    s1_process_noized_dirpath = os.path.abspath(os.path.join(os.path.dirname(s1_process_filepath),"../../s1process_noized/"))
+    s1_process_noized_filepath = os.path.join(s1_process_noized_dirpath, os.path.basename(os.path.dirname(s1_process_filepath)))
+    s1_process_noized_filepath = os.path.join(s1_process_noized_filepath, os.path.basename(s1_process_filepath))
+
+    msk = otb.Registry.CreateApplication("BandMath")
+    msk.SetParameterStringList("il", [str(s1_process_filepath), str(s1_process_noized_filepath)])
+    msk.SetParameterString("out", str(s1_process_filepath))
+    mask_exp = "im2b1==0?" + str(nodata_out) + ":im1b1"
+    msk.SetParameterString("exp", mask_exp)
+    msk.ExecuteAndWriteOutput()
+
     app = otb.Registry.CreateApplication("BandMath")
     app.SetParameterStringList("il", [str(s1_process_filepath)])
     ewoc_output_filepath_vv_otb = str(ewoc_filepath) + '?'
-    if nodata_in != nodata_out:
-        ewoc_output_filepath_vv_otb += "&nodata="+ str(nodata_out)
+    #    if nodata_in != nodata_out:
+    ewoc_output_filepath_vv_otb += "&nodata="+ str(nodata_out)
     
     ewoc_output_filepath_vv_otb += "&gdal:co:TILED=YES" + \
         "&gdal:co:BLOCKXSIZE=" + str(blocksize) + \
@@ -83,7 +96,7 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     app.SetParameterString("out", str(ewoc_output_filepath_vv_otb))
     app.SetParameterOutputImagePixelType("out", otb.ImagePixelType_uint16)
 
-    otb_exp = "im1b1==" + str(nodata_in) + "?" + str(nodata_out) + ":10.^((10.*log10(im1b1)+83.)/20.)"
+    otb_exp = "im1b1==0?0:im1b1==" + str(nodata_out) + "?" + str(nodata_out) + ":10.^((10.*log10(im1b1)+83.)/20.)"
     logger.debug(otb_exp)
     app.SetParameterString("exp", otb_exp)
     
