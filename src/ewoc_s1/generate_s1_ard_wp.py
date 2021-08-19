@@ -27,7 +27,7 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
     logger.info('Work plan: %s', work_plan_filepath)
 
     wp_reader = EwocWorkPlanReader(work_plan_filepath)
-    logger.info('%s tiles will be process: %s!', 
+    logger.info('%s tiles will be process: %s!',
                 len(wp_reader.tile_ids), wp_reader.tile_ids)
 
     for s2_tile_id in wp_reader.tile_ids:
@@ -40,7 +40,7 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         if dem_dirpath is None:
             dem_dirpath = working_dirpath / 'dem'
             dem_dirpath.mkdir(exist_ok=True, parents=True)
-            get_srtm1s(s2_tile_id, dem_dirpath)
+            get_srtm1s(s2_tile_id, dem_dirpath, 'local')
 
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
             logger.info('%s will be process for %s!', s1_prd_ids, date_key)
@@ -48,8 +48,8 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
             wd_dirpath_tile_date = wd_dirpath_tile / date_key
             wd_dirpath_tile_date.mkdir(exist_ok=True)
 
-            generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,  
-                            dem_dirpath, wd_dirpath_tile_date, 
+            generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
+                            dem_dirpath, wd_dirpath_tile_date,
                             clean=clean, upload_outputs=upload_outputs)
 
             if clean:
@@ -87,7 +87,7 @@ def parse_args(args):
     parser.add_argument("-w", dest="working_dirpath", help="Working dirpath", type=Path,
         default=Path(tempfile.gettempdir()))
     parser.add_argument("--upload", action='store_true', help= 'Upload outputs to s3 bucket')
-    
+
     parser.add_argument(
         "-v",
         "--verbose",
