@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
                         dem_dirpath=None, working_dirpath_root=None,
                         clean=False, upload_outputs=False,
-                        data_source='creodias_eodata', dem_source='ewoc'):
+                        data_source='creodias_eodata', dem_source='creodias_eodata'):
 
     if working_dirpath_root is None:
         working_dirpath_root = Path(tempfile.gettempdir())
@@ -33,7 +33,7 @@ def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
         dem_dirpath = working_dirpath / 'dem' / s2_tile_id
         dem_dirpath.mkdir(exist_ok=True, parents=True)
         try:
-            get_srtm1s(s2_tile_id, dem_dirpath, dem_source)
+            get_srtm1s(s2_tile_id, dem_dirpath, source=dem_source)
         except:
             logger.critical('No elevation available!')
             return
@@ -81,7 +81,7 @@ def parse_args(args):
                         default='creodias_eodata')
     parser.add_argument("--dem_source", dest="dem_source", help= 'Source of the DEM data', 
                         type=str,
-                        default='ewoc')
+                        default='creodias_eodata')
     parser.add_argument(
         "-v",
         "--verbose",

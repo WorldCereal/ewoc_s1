@@ -59,7 +59,11 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                 except:
                     logger.error('No product download for %s', s1_prd_id)
                     continue
-                s1_prd_safe_dirpath.rename(s1_prd_wsafe_dirpath)
+                if data_source == 'creodias_finder':
+                    s1_prd_safe_dirpath.rename(s1_prd_wsafe_dirpath)
+                else:
+                    s1_prd_wsafe_dirpath.mkdir()
+                    s1_prd_safe_dirpath.rename(s1_prd_wsafe_dirpath/s1_prd_safe_dirpath.name)
             else:
                 logger.info('S1 prd %s is already available on disk', s1_prd_id)
         else:
