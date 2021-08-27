@@ -15,14 +15,22 @@ logger = logging.getLogger(__name__)
 
 def to_ewoc_s1_ard(s1_process_output_dirpath,
                    out_dirpath,
-                   s1_prd_info, 
+                   s1_prd_info,
                    s2_tile_id,
                    rename_only=False,
                    clean_input_file=False):
-    
-    orbit_direction = 'DES' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
-    relative_orbit= 'TODO' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
-    
+
+    # TODO provide a more strict regex
+    s1_process_output_filepath_vv = sorted(s1_process_output_dirpath.glob('*vv*.tif'))[0]
+    s1_process_output_filepath_vh = sorted(s1_process_output_dirpath.glob('*vh*.tif'))[0]
+
+    relative_orbit = 'TODO' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
+    calibration_type = 'SIGMA0' # TODO retrieve from GDAL MTD of the output s1_process file or from parameters
+
+    orbit_direction = 'DES'
+    if os.path.basename(s1_process_output_filepath_vv).find('_ASC_') != -1:
+        orbit_direction = 'ASC'
+
     ewoc_output_dirname_elt = [s1_prd_info.mission_id,
                                 s1_prd_info.start_time.strftime(S1PrdIdInfo.FORMAT_DATETIME),
                                 orbit_direction,
@@ -35,7 +43,6 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
     logger.debug('Create output directory: %s', ewoc_output_dirpath)
     ewoc_output_dirpath.mkdir(exist_ok=True, parents=True)
 
-    calibration_type = 'SIGMA0' # TODO retrieve from GDAL MTD of the output s1_process file or from parameters
     output_file_ext= '.tif'
     ewoc_output_filename_elt = ewoc_output_dirname_elt + [calibration_type]
     ewoc_output_filename_vv = '_'.join(ewoc_output_filename_elt + ['VV']) + output_file_ext
@@ -44,10 +51,6 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
     ewoc_output_filename_vh = '_'.join(ewoc_output_filename_elt + ['VH']) + output_file_ext
     ewoc_output_filepath_vh = ewoc_output_dirpath / ewoc_output_filename_vh
     logger.debug('Output VH filepath: %s', ewoc_output_filepath_vh)
-
-    # TODO provide a more strict regex
-    s1_process_output_filepath_vv = sorted(s1_process_output_dirpath.glob('*vv*.tif'))[0]
-    s1_process_output_filepath_vh = sorted(s1_process_output_dirpath.glob('*vh*.tif'))[0]
 
     if rename_only:
         s1_process_output_filepath_vv.rename(ewoc_output_filepath_vv)
@@ -84,11 +87,11 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     ewoc_output_filepath_vv_otb = str(ewoc_filepath) + '?'
     #    if nodata_in != nodata_out:
     ewoc_output_filepath_vv_otb += "&nodata="+ str(nodata_out)
-    
+
     ewoc_output_filepath_vv_otb += "&gdal:co:TILED=YES" + \
         "&gdal:co:BLOCKXSIZE=" + str(blocksize) + \
             "&gdal:co:BLOCKYSIZE=" + str(blocksize)
-    
+
     if compress:
         ewoc_output_filepath_vv_otb +="&gdal:co:COMPRESS=DEFLATE"
 
@@ -98,5 +101,5 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     otb_exp = "im1b1==0?0:im1b1==" + str(nodata_out) + "?" + str(nodata_out) + ":10.^((10.*log10(im1b1)+83.)/20.)"
     logger.debug(otb_exp)
     app.SetParameterString("exp", otb_exp)
-    
+
     app.ExecuteAndWriteOutput()
