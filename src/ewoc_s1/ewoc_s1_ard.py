@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 def to_ewoc_s1_ard(s1_process_output_dirpath,
                    out_dirpath,
-                   s1_prd_info, 
+                   s1_prd_info,
                    s2_tile_id,
                    rename_only=False,
                    clean_input_file=False):
-    
+
     orbit_direction = 'DES' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
     relative_orbit= 'TODO' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
-    
+
     ewoc_output_dirname_elt = [s1_prd_info.mission_id,
                                 s1_prd_info.start_time.strftime(S1PrdIdInfo.FORMAT_DATETIME),
                                 orbit_direction,
@@ -75,7 +75,7 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     msk = otb.Registry.CreateApplication("BandMath")
     msk.SetParameterStringList("il", [str(s1_process_filepath), str(s1_process_noized_filepath)])
     msk.SetParameterString("out", str(s1_process_filepath))
-    mask_exp = "im2b1==0?" + str(nodata_out) + ":im1b1"
+    mask_exp = "im2b1==0?" + str(nodata_out) + ":(im1b1==0?im2b1:im1b1)"
     msk.SetParameterString("exp", mask_exp)
     msk.ExecuteAndWriteOutput()
 
@@ -84,11 +84,11 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     ewoc_output_filepath_vv_otb = str(ewoc_filepath) + '?'
     #    if nodata_in != nodata_out:
     ewoc_output_filepath_vv_otb += "&nodata="+ str(nodata_out)
-    
+
     ewoc_output_filepath_vv_otb += "&gdal:co:TILED=YES" + \
         "&gdal:co:BLOCKXSIZE=" + str(blocksize) + \
             "&gdal:co:BLOCKYSIZE=" + str(blocksize)
-    
+
     if compress:
         ewoc_output_filepath_vv_otb +="&gdal:co:COMPRESS=DEFLATE"
 
@@ -98,5 +98,5 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     otb_exp = "im1b1==0?0:im1b1==" + str(nodata_out) + "?" + str(nodata_out) + ":10.^((10.*log10(im1b1)+83.)/20.)"
     logger.debug(otb_exp)
     app.SetParameterString("exp", otb_exp)
-    
+
     app.ExecuteAndWriteOutput()
