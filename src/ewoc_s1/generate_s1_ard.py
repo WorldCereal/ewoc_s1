@@ -5,7 +5,7 @@ import shutil
 from typing import List
 
 from dataship.dag.s3man import get_s3_client, recursive_upload_dir_to_s3
-from dataship.dag.utils import get_s1_product_by_id
+from dataship.dag.s1_dag import get_s1_product
 from s1tiling.S1Processor import main as s1_process
 
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Path,
                     dem_dirpath: Path, working_dirpath: Path,
-                    clean: bool=True, upload_outputs: bool=True):
+                    clean: bool=True, upload_outputs: bool=True, data_source:str='creodias_eodata'):
 
     """ Generate S1 ARD from the products identified by their product id for the S2 tile id
     """
@@ -42,6 +42,10 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
     wd_s1process_dirpath_root = working_dirpath / 's1process'
     wd_s1process_dirpath_root.mkdir(exist_ok=True)
     output_s1process_dirpath = wd_s1process_dirpath_root / s2_tile_id
+    
+    wd_s1process_noized_dirpath_root = working_dirpath / 's1process_noized'
+    wd_s1process_noized_dirpath_root.mkdir(exist_ok=True)
+    output_s1process_noized_dirpath = wd_s1process_noized_dirpath_root / s2_tile_id
 
     for s1_prd_id in s1_prd_ids:
         if S1PrdIdInfo.is_valid(s1_prd_id):
@@ -51,11 +55,15 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
             s1_prd_wsafe_dirpath =  s1_input_dir / s1_prd_safe_dirpath.stem
             if not s1_prd_wsafe_dirpath.exists():
                 try:
-                    get_s1_product_by_id(s1_prd_id, s1_input_dir, 'creodias')
+                    get_s1_product(s1_prd_id, s1_input_dir, source=data_source)
                 except:
                     logger.error('No product download for %s', s1_prd_id)
                     continue
-                s1_prd_safe_dirpath.rename(s1_prd_wsafe_dirpath)
+                if data_source == 'creodias_finder':
+                    s1_prd_safe_dirpath.rename(s1_prd_wsafe_dirpath)
+                else:
+                    s1_prd_wsafe_dirpath.mkdir()
+                    s1_prd_safe_dirpath.rename(s1_prd_wsafe_dirpath/s1_prd_safe_dirpath.name)
             else:
                 logger.info('S1 prd %s is already available on disk', s1_prd_id)
         else:
@@ -73,7 +81,20 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                                                    wd_s1process_dirpath_root, 
                                                    s2_tile_id, ClusterConfig(len(s1_prd_ids))))
     except:
-        logger.error('S1 process failed!')
+        logger.error('S1 process denoized failed!')
+        return
+
+    try:
+        s1_process.callback(20, False, False, False, False, False, 
+                            to_s1tiling_configfile(wd_s1process_noized_dirpath_root, 
+                                                   s1_input_dir, 
+                                                   dem_dirpath, 
+                                                   wd_s1process_noized_dirpath_root, 
+                                                   s2_tile_id, 
+                                                   ClusterConfig(len(s1_prd_ids)),
+                                                   remove_thermal_noise=False))
+    except:
+        logger.error('S1 process noized failed!')
         return
     
     # If sucess of s1process remove the input dir

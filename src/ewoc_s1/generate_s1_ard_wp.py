@@ -6,7 +6,7 @@ import shutil
 import sys
 import tempfile
 
-from dataship.dag.utils import get_srtm1s
+from dataship.dag.srtm_dag import get_srtm1s
 
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard
@@ -20,14 +20,19 @@ logger = logging.getLogger(__name__)
 
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
                        dem_dirpath=None, working_dirpath_root=None,
-                       clean=True, upload_outputs=True):
+                       clean=True, upload_outputs=True,
+                       data_source='creodias_eodata', dem_source='creodias_eodata'):
+
+    if working_dirpath_root is None:
+        working_dirpath_root = Path(tempfile.gettempdir())
+
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
 
     logger.info('Work plan: %s', work_plan_filepath)
 
     wp_reader = EwocWorkPlanReader(work_plan_filepath)
-    logger.info('%s tiles will be process: %s!', 
+    logger.info('%s tiles will be process: %s!',
                 len(wp_reader.tile_ids), wp_reader.tile_ids)
 
     for s2_tile_id in wp_reader.tile_ids:
@@ -38,9 +43,13 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         wd_dirpath_tile.mkdir(exist_ok=True, parents=True)
 
         if dem_dirpath is None:
-            dem_dirpath = working_dirpath / 'dem'
+            dem_dirpath = wd_dirpath_tile / 'dem'
             dem_dirpath.mkdir(exist_ok=True, parents=True)
-            get_srtm1s(s2_tile_id, dem_dirpath)
+            try:
+                get_srtm1s(s2_tile_id, dem_dirpath, source=dem_source)
+            except:
+                logger.critical('No elevation available!')
+                return
 
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
             logger.info('%s will be process for %s!', s1_prd_ids, date_key)
@@ -48,9 +57,10 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
             wd_dirpath_tile_date = wd_dirpath_tile / date_key
             wd_dirpath_tile_date.mkdir(exist_ok=True)
 
-            generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,  
-                            dem_dirpath, wd_dirpath_tile_date, 
-                            clean=clean, upload_outputs=upload_outputs)
+            generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
+                            dem_dirpath, wd_dirpath_tile_date,
+                            clean=clean, upload_outputs=upload_outputs,
+                            data_source=data_source)
 
             if clean:
                 shutil.rmtree(wd_dirpath_tile_date)
@@ -87,7 +97,7 @@ def parse_args(args):
     parser.add_argument("-w", dest="working_dirpath", help="Working dirpath", type=Path,
         default=Path(tempfile.gettempdir()))
     parser.add_argument("--upload", action='store_true', help= 'Upload outputs to s3 bucket')
-    
+
     parser.add_argument(
         "-v",
         "--verbose",
@@ -118,7 +128,6 @@ def setup_logging(loglevel):
         level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-
 def main(args):
     """Wrapper allowing :func:`generate_s1_ard_wp` to be called with string arguments in a CLI fashion
 
@@ -128,7 +137,7 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
-    logger.debug("Starting Generate S1 ARD for the workplan ...", args.work_plan)
+    logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
     generate_s1_ard_wp(args.work_plan, args.out_dirpath,
                        args.dem_dirpath, args.working_dirpath,
                        upload_outputs=args.upload)
@@ -144,14 +153,4 @@ def run():
 
 
 if __name__ == "__main__":
-    # ^  This is a guard statement that will prevent the following code from
-    #    being executed in the case someone imports this file instead of
-    #    executing it as a script.
-    #    https://docs.python.org/3/library/__main__.html
-
-    # After installing your project with pip, users can also run your Python
-    # modules as scripts via the ``-m`` flag, as defined in PEP 338::
-    #
-    #     python -m ewoc_s1.generate_ard 42
-    #
     run()
