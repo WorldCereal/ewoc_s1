@@ -138,7 +138,7 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
-    logger.debug("Starting Generate S1 ARD for the workplan ...", args.work_plan)
+    logger.debug("Starting Generate S1 ARD for the workplan %s...", args.work_plan)
     generate_s1_ard_wp(args.work_plan, args.out_dirpath,
                        args.dem_dirpath, args.working_dirpath,
                        upload_outputs=args.upload)
