@@ -43,13 +43,13 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         wd_dirpath_tile.mkdir(exist_ok=True, parents=True)
 
         if dem_dirpath is None:
-            dem_dirpath = working_dirpath / 'dem'
+            dem_dirpath = wd_dirpath_tile / 'dem'
             dem_dirpath.mkdir(exist_ok=True, parents=True)
             try:
                 get_srtm1s(s2_tile_id, dem_dirpath, source=dem_source)
             except:
                 logger.critical('No elevation available!')
-            return
+                return
 
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
             logger.info('%s will be process for %s!', s1_prd_ids, date_key)
@@ -128,7 +128,6 @@ def setup_logging(loglevel):
         level=loglevel, stream=sys.stdout, format=logformat, datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-
 def main(args):
     """Wrapper allowing :func:`generate_s1_ard_wp` to be called with string arguments in a CLI fashion
 
@@ -138,7 +137,7 @@ def main(args):
     """
     args = parse_args(args)
     setup_logging(args.loglevel)
-    logger.debug("Starting Generate S1 ARD for the workplan %s...", args.work_plan)
+    logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
     generate_s1_ard_wp(args.work_plan, args.out_dirpath,
                        args.dem_dirpath, args.working_dirpath,
                        upload_outputs=args.upload)
