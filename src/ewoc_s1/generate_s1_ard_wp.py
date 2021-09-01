@@ -6,7 +6,7 @@ import shutil
 import sys
 import tempfile
 
-from dataship.dag.utils import get_srtm1s
+from dataship.dag.srtm_dag import get_srtm1s
 
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard
@@ -20,7 +20,12 @@ logger = logging.getLogger(__name__)
 
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
                        dem_dirpath=None, working_dirpath_root=None,
-                       clean=True, upload_outputs=True):
+                       clean=True, upload_outputs=True,
+                       data_source='creodias_eodata', dem_source='creodias_eodata'):
+
+    if working_dirpath_root is None:
+        working_dirpath_root = Path(tempfile.gettempdir())
+
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
 
@@ -40,7 +45,11 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         if dem_dirpath is None:
             dem_dirpath = working_dirpath / 'dem'
             dem_dirpath.mkdir(exist_ok=True, parents=True)
-            get_srtm1s(s2_tile_id, dem_dirpath, 'local')
+            try:
+                get_srtm1s(s2_tile_id, dem_dirpath, source=dem_source)
+            except:
+                logger.critical('No elevation available!')
+            return
 
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
             logger.info('%s will be process for %s!', s1_prd_ids, date_key)
@@ -50,7 +59,8 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 
             generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
                             dem_dirpath, wd_dirpath_tile_date,
-                            clean=clean, upload_outputs=upload_outputs)
+                            clean=clean, upload_outputs=upload_outputs,
+                            data_source=data_source)
 
             if clean:
                 shutil.rmtree(wd_dirpath_tile_date)
