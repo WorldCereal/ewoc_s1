@@ -17,7 +17,6 @@ __license__ = "MIT"
 
 logger = logging.getLogger(__name__)
 
-
 def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
                         dem_dirpath=None, working_dirpath_root=None,
                         clean=False, upload_outputs=False,
@@ -142,14 +141,4 @@ def run():
 
 
 if __name__ == "__main__":
-    # ^  This is a guard statement that will prevent the following code from
-    #    being executed in the case someone imports this file instead of
-    #    executing it as a script.
-    #    https://docs.python.org/3/library/__main__.html
-
-    # After installing your project with pip, users can also run your Python
-    # modules as scripts via the ``-m`` flag, as defined in PEP 338::
-    #
-    #     python -m ewoc_s1.generate_ard 42
-    #
     run()

@@ -11,9 +11,12 @@ Description
 To generate EWoC ARD, the ewoc_s1 CLI perform the following tasks:
 
 * Read or retrieve inputs S1 product ID from CLI arguments or from the worplan file or from database
-* Retrieve the SRTM 1s data from `ESA Website <http://step.esa.int/auxdata/dem/SRTMGL1/>`_ 
-* Download the S1 produc ID from creodias finder api thanks to `EODAG <https://eodag.readthedocs.io/en/stable/#>`_ and `ewoc_dag <https://github.com/WorldCereal/ewoc_dataship>`_ if needed
+* Retrieve the SRTM 1s data from `ESA Website <http://step.esa.int/auxdata/dem/SRTMGL1/>`_ or creodias data bucket or local ewoc bucket 
+* Download the S1 product ID from
+  * creodias s3 bucket
+  * creodias finder api thanks to `EODAG <https://eodag.readthedocs.io/en/stable/#>`_ and `ewoc_dag <https://github.com/WorldCereal/ewoc_dataship>`_ if needed
 * Perform S1 calibration and projection to S2 grid thanks to `S1Tiling <https://gitlab.orfeo-toolbox.org/s1-tiling/s1tiling>`_ 
+* Perform the same operation with thermal noise removal deactivated to identify no acquisition data and to follow snap convention about thermal noise
 * Format to EWoC ARD format
 * Push to a s3 bucket if needed
 
@@ -39,8 +42,7 @@ The package provides 3 different commands:
 
     ewoc_generate_s1_ard_wp /path/to/workplan.json \
                             /path/to/output/dir \
-                            --dem_dirpath /path/to/srtm/dir \
-                            -w /path/to/working/dir -v
+                            -v
 
 * **Not currently implemented!** *ewoc_generate_s1_ard_db* which allow to run the processing with interaction with a database of S1 product to run
 
