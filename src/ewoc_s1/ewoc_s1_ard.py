@@ -1,4 +1,5 @@
 
+from datetime import datetime
 import os
 import logging
 
@@ -105,3 +106,11 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
     app.SetParameterString("exp", otb_exp)
 
     app.ExecuteAndWriteOutput()
+
+    # Modify output metadata
+    with rasterio.open(ewoc_filepath, 'r+') as dataset:
+        acq_date = dataset.get_tag_item('ACQUISITION_DATETIME').split(' ')[0]
+        dataset.update_tags(ACQUISITION_DATETIME=acq_date)
+        dataset.update_tags(TIFFTAG_DATETIME=str(datetime.now()))
+        dataset.update_tags(TIFFTAG_IMAGEDESCRIPTION='EWoC ARD Sentinel-1 processor')
+        dataset.update_tags(TIFFTAG_SOFTWARE='ewoc_s1 '+str(__version__))
