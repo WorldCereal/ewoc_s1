@@ -56,7 +56,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        prerelease: true
+        prerelease: false
         files: |
           dist/ewoc_s1-*.whl
           dist/ewoc_s1-*.tar.gz
