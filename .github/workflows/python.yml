@@ -38,7 +38,7 @@ jobs:
         name: distribution
         path: ./dist
 
-release-python:
+  release-python:
 
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
