@@ -6,7 +6,7 @@ from typing import List
 
 from dataship.dag.s3man import get_s3_client, recursive_upload_dir_to_s3
 from dataship.dag.s1_dag import get_s1_product
-from s1tiling.S1Processor import main as s1_process
+from s1tiling.S1Processor import s1_process
 
 
 from ewoc_s1 import __version__
@@ -74,25 +74,25 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         return
 
     try:
-        s1_process.callback(20, False, False, False, False, False, 
-                            to_s1tiling_configfile(wd_s1process_dirpath_root, 
-                                                   s1_input_dir, 
-                                                   dem_dirpath, 
-                                                   wd_s1process_dirpath_root, 
-                                                   s2_tile_id, ClusterConfig(len(s1_prd_ids))))
+        s1_process(20, False, False, False, False, False,
+                    to_s1tiling_configfile(wd_s1process_dirpath_root,
+                                            s1_input_dir,
+                                            dem_dirpath,
+                                            wd_s1process_dirpath_root,
+                                            s2_tile_id, ClusterConfig(len(s1_prd_ids))))
     except:
         logger.error('S1 process denoized failed!')
         return
 
     try:
-        s1_process.callback(20, False, False, False, False, False, 
-                            to_s1tiling_configfile(wd_s1process_noized_dirpath_root, 
-                                                   s1_input_dir, 
-                                                   dem_dirpath, 
-                                                   wd_s1process_noized_dirpath_root, 
-                                                   s2_tile_id, 
-                                                   ClusterConfig(len(s1_prd_ids)),
-                                                   remove_thermal_noise=False))
+        s1_process(20, False, False, False, False, False,
+                    to_s1tiling_configfile(wd_s1process_noized_dirpath_root,
+                                            s1_input_dir,
+                                            dem_dirpath,
+                                            wd_s1process_noized_dirpath_root,
+                                            s2_tile_id,
+                                            ClusterConfig(len(s1_prd_ids)),
+                                            remove_thermal_noise=False))
     except:
         logger.error('S1 process noized failed!')
         return
