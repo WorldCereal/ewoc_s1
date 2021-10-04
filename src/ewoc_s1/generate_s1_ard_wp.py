@@ -6,7 +6,7 @@ import shutil
 import sys
 import tempfile
 
-from dataship.dag.srtm_dag import get_srtm1s
+from ewoc_dag.dag.srtm_dag import get_srtm1s
 
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard

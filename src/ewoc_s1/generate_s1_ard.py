@@ -4,8 +4,8 @@ from pathlib import Path
 import shutil
 from typing import List
 
-from dataship.dag.s3man import get_s3_client, recursive_upload_dir_to_s3
-from dataship.dag.s1_dag import get_s1_product
+from ewoc_dag.dag.s3man import get_s3_client, recursive_upload_dir_to_s3
+from ewoc_dag.dag.s1_dag import get_s1_product
 from s1tiling.S1Processor import s1_process
 
 
