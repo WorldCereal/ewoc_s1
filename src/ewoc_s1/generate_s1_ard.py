@@ -120,6 +120,10 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                                         str(out_dirpath) + '/', 
                                         os.getenv('DEST_PREFIX', default = 'WORLDCEREAL_PREPROC/test_upload/'), 
                                         bucketname=os.getenv('BUCKET', default='world-cereal'))
+            s1_ard_keys = []
+            for s1_ard_key in sorted(out_dirpath.rglob('*.tif')):
+                s1_ard_keys.append(str(s1_ard_key.relative_to(out_dirpath)))
+
         except:
             logger.error('Push to ewoc bucket failed!')
             return
@@ -128,3 +132,5 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         if clean:
             logger.info('Remove %s', out_dirpath)
             shutil.rmtree(out_dirpath)
+
+        return s1_ard_keys

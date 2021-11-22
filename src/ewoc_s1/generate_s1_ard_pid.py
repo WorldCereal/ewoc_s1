@@ -37,13 +37,15 @@ def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
             logger.critical('No elevation available!')
             return
 
-    generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
+    s1_ard_keys = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
                     dem_dirpath, working_dirpath,
                     clean=clean, upload_outputs=upload_outputs,
                     data_source=data_source)
 
     if clean:
         shutil.rmtree(working_dirpath)
+
+    return s1_ard_keys
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
