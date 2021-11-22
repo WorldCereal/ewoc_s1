@@ -114,7 +114,7 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_
         dataset.update_tags(TIFFTAG_DATETIME=str(datetime.now()))
         dataset.update_tags(TIFFTAG_IMAGEDESCRIPTION='EWoC Sentinel-1 ARD')
         processor_docker_version = os.getenv('EWOC_S1_DOCKER_VERSION')
-        if processor_docker_version is not None:
+        if processor_docker_version is None:
             dataset.update_tags(TIFFTAG_SOFTWARE='EWoC S1 Processor '+ str(__version__))
         else:
             dataset.update_tags(TIFFTAG_SOFTWARE='EWoC S1 Processor '+ str(__version__) + ' / ' + processor_docker_version)
