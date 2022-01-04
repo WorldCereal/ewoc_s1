@@ -85,8 +85,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         return
 
     try:
-        s1_process(20, False, False, False, False, False,
-                    to_s1tiling_configfile(wd_s1process_noized_dirpath_root,
+        s1_process(to_s1tiling_configfile(wd_s1process_noized_dirpath_root,
                                             s1_input_dir,
                                             dem_dirpath,
                                             wd_s1process_noized_dirpath_root,
