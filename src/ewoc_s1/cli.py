@@ -139,7 +139,7 @@ def parse_args(args):
 
     parser.add_argument("--no-clean",
         action='store_true',
-        help= 'Aovoid to clean all dirs and files')
+        help= 'Avoid to clean all dirs and files')
     parser.add_argument("--no-upload",
         action='store_true',
         help= 'Skip the upload of ard files to s3 bucket')
