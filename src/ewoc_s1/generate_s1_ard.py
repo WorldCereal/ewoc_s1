@@ -74,24 +74,23 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         return
 
     try:
-        s1_process(20, False, False, False, False, False,
-                    to_s1tiling_configfile(wd_s1process_dirpath_root,
+        s1_process(str(to_s1tiling_configfile(wd_s1process_dirpath_root,
                                             s1_input_dir,
                                             dem_dirpath,
                                             wd_s1process_dirpath_root,
-                                            s2_tile_id, ClusterConfig(len(s1_prd_ids))))
+                                            s2_tile_id, ClusterConfig(len(s1_prd_ids)))))
     except:
-        logger.error('S1 process denoized failed!')
+        logger.error('S1 process failed!')
         return
 
     try:
-        s1_process(to_s1tiling_configfile(wd_s1process_noized_dirpath_root,
+        s1_process(str(to_s1tiling_configfile(wd_s1process_noized_dirpath_root,
                                             s1_input_dir,
                                             dem_dirpath,
                                             wd_s1process_noized_dirpath_root,
                                             s2_tile_id,
                                             ClusterConfig(len(s1_prd_ids)),
-                                            remove_thermal_noise=False))
+                                            remove_thermal_noise=False)))
     except:
         logger.error('S1 process noized failed!')
         return
