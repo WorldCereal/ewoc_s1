@@ -144,10 +144,10 @@ def parse_args(args):
         help="Production ID that will be used to upload to s3 bucket, by default it is computed internally")
 
 
-    parser.add_argument("--data_source", dest="data_source", help= 'Source of the S1 input data',
+    parser.add_argument("--data-source", dest="data_source", help= 'Source of the S1 input data',
                         type=str,
                         default='creodias_eodata')
-    parser.add_argument("--dem_source", dest="dem_source", help= 'Source of the DEM data',
+    parser.add_argument("--dem-source", dest="dem_source", help= 'Source of the DEM data',
                         type=str,
                         default='creodias_eodata')
     parser.add_argument(
