@@ -24,12 +24,9 @@ def _get_default_prod_id()->str:
     return f"0000_000_{str_now}"
 
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
-                       dem_dirpath=None, working_dirpath_root=None,
+                       dem_dirpath=None, working_dirpath_root=Path(gettempdir()),
                        clean=True, upload_outputs=True,
                        data_source='creodias_eodata', dem_source='creodias_eodata'):
-
-    if working_dirpath_root is None:
-        working_dirpath_root = Path(gettempdir())
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
@@ -76,12 +73,10 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 
 
 def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
-                        dem_dirpath=None, working_dirpath_root=None,
+                        dem_dirpath=None, working_dirpath_root=Path(gettempdir()),
                         clean=False, upload_outputs=False,
                         data_source='creodias_eodata', dem_source='creodias_eodata'):
 
-    if working_dirpath_root is None:
-        working_dirpath_root = Path(gettempdir())
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_pid'
     working_dirpath.mkdir(exist_ok=True)
