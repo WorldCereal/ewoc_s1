@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import shutil
 from tempfile import gettempdir
+from typing import List
 
 from dataship.dag.srtm_dag import get_srtm1s
 
@@ -106,7 +107,7 @@ def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
 # executable/script.
 
 
-def parse_args(args):
+def parse_args(args:List[str]):
     """Parse command line parameters
 
     Args:
@@ -200,7 +201,7 @@ def setup_logging(loglevel):
     )
 
 
-def main(args):
+def main(args:List[str]):
     """Wrapper allowing :func:`generate_s1_ard` to be called with string arguments in a CLI fashion
 
     Instead of returning the value from :func:`fib`, it prints the result to the
