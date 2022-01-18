@@ -27,7 +27,7 @@ def _get_default_prod_id()->str:
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
                        working_dirpath_root=Path(gettempdir()),
                        clean=True, upload_outputs=True,
-                       data_source='creodias_eodata', dem_source='creodias'):
+                       data_source='creodias', dem_source='creodias'):
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
