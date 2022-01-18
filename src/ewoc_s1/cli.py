@@ -25,7 +25,7 @@ def _get_default_prod_id()->str:
     return f"0000_000_{str_now}"
 
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
-                       dem_dirpath=None, working_dirpath_root=Path(gettempdir()),
+                       working_dirpath_root=Path(gettempdir()),
                        clean=True, upload_outputs=True,
                        data_source='creodias_eodata', dem_source='creodias'):
 
@@ -45,7 +45,7 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         wd_dirpath_tile = working_dirpath / s2_tile_id
         wd_dirpath_tile.mkdir(exist_ok=True, parents=True)
 
-        if dem_dirpath is None:
+        if not Path(dem_source).is_dir():
             dem_dirpath = wd_dirpath_tile / 'dem'
             dem_dirpath.mkdir(exist_ok=True, parents=True)
             try:
@@ -53,6 +53,8 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
             except:
                 logger.critical('No elevation available!')
                 return
+        else:
+            dem_dirpath = Path(dem_source)
 
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
             logger.info('%s will be process for %s!', s1_prd_ids, date_key)
@@ -74,15 +76,15 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 
 
 def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
-                        dem_dirpath=None, working_dirpath_root=Path(gettempdir()),
+                        working_dirpath_root=Path(gettempdir()),
                         clean=False, upload_outputs=False,
-                        data_source='creodias_eodata', dem_source='creodias'):
+                        data_source='creodias', dem_source='creodias'):
 
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_pid'
     working_dirpath.mkdir(exist_ok=True)
 
-    if dem_dirpath is None:
+    if not Path(dem_source).is_dir():
         dem_dirpath = working_dirpath / 'dem' / s2_tile_id
         dem_dirpath.mkdir(exist_ok=True, parents=True)
         try:
@@ -92,6 +94,8 @@ def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
         except:
             logger.critical('No elevation available!')
             return
+    else:
+        dem_dirpath = Path(dem_source)
 
     s1_ard_keys = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
                     dem_dirpath, working_dirpath,
@@ -131,7 +135,6 @@ def parse_args(args:List[str]):
         help="Output Dirpath",
         type=Path,
         default=Path(gettempdir()))
-    parser.add_argument("--dem_dirpath", dest="dem_dirpath", help="DEM dirpath", type=Path)
     parser.add_argument("-w", dest="working_dirpath", help="Working dirpath", type=Path,
         default=Path(gettempdir()))
 
@@ -221,7 +224,7 @@ def main(args:List[str]):
 
         logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...", args.s1_prd_ids, args.s2_tile_id)
         generate_s1_ard_from_pids(args.s1_prd_ids, args.s2_tile_id,
-            args.out_dirpath, dem_dirpath=args.dem_dirpath, working_dirpath_root=args.working_dirpath,
+            args.out_dirpath, working_dirpath_root=args.working_dirpath,
             clean=args.no_clean, upload_outputs=args.no_upload,
             data_source=args.data_source, dem_source=args.dem_source)
         logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!", args.s1_prd_ids, args.s2_tile_id)
