@@ -97,13 +97,13 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         shutil.rmtree(s1_input_dir)
 
     try:
-        to_ewoc_s1_ard( output_s1process_dirpath, out_dirpath, 
-                        S1PrdIdInfo(s1_prd_ids[0]), s2_tile_id, 
+        to_ewoc_s1_ard( output_s1process_dirpath, out_dirpath,
+                        S1PrdIdInfo(s1_prd_ids[0]), s2_tile_id,
                         rename_only=False, clean_input_file=clean)
     except:
         logger.error('Format to ewoc product failed!')
         return
-        
+
     # if sucess of format output, remove the s1 process wd dir
     if clean:
         shutil.rmtree(wd_s1process_dirpath_root)
