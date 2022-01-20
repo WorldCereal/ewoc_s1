@@ -52,7 +52,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
             s1_prd_wsafe_dirpath =  s1_input_dir / s1_prd_safe_dirpath.stem
             if not s1_prd_wsafe_dirpath.exists():
                 try:
-                    get_s1_product(s1_prd_id, s1_input_dir, source=data_source)
+                    get_s1_product(s1_prd_id, s1_input_dir, source=data_source, safe_format=True)
                 except:
                     logger.error('No product download for %s', s1_prd_id)
                     continue
