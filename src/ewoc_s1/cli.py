@@ -139,10 +139,10 @@ def parse_args(args:List[str]):
         default=Path(gettempdir()))
 
     parser.add_argument("--no-clean",
-        action='store_true',
+        action='store_false',
         help= 'Avoid to clean all dirs and files')
     parser.add_argument("--no-upload",
-        action='store_true',
+        action='store_false',
         help= 'Skip the upload of ard files to s3 bucket')
 
     parser.add_argument("--prod-id",
