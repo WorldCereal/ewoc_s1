@@ -3,6 +3,7 @@ from pathlib import Path
 import shutil
 from typing import List
 
+from ewoc_dag.bucket.ewoc import EWOCARDBucket
 from ewoc_dag.s1_dag import get_s1_product
 from s1tiling.S1Processor import s1_process
 
@@ -112,13 +113,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
     if upload_outputs:
         logger.info('Push %s to bucket', out_dirpath)
         try:
-            from ewoc_dag.bucket.ewoc import EWOCARDBucket
-            ewoc_ard_bucket = EWOCARDBucket()
-            ewoc_ard_bucket.upload_ard_prd(out_dirpath, production_id)
-            #recursive_upload_dir_to_s3( get_s3_client(),
-            #                            str(out_dirpath) + '/',
-            #                            os.getenv('DEST_PREFIX', default = 'WORLDCEREAL_PREPROC/test_upload/'),
-            #                            bucketname=os.getenv('BUCKET', default='world-cereal'))
+            EWOCARDBucket().upload_ard_prd(out_dirpath, production_id)
             s1_ard_keys = []
             for s1_ard_key in sorted(out_dirpath.rglob('*.tif')):
                 s1_ard_keys.append(str(s1_ard_key.relative_to(out_dirpath)))
