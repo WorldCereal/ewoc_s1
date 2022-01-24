@@ -23,7 +23,7 @@ jobs:
     - name: Download ewoc_dag
       uses: robinraju/release-downloader@v1.1
       with:
-        repository: "WorldCereal/ewoc_dag"
+        repository: "WorldCereal/ewoc_dataship"
         tag: "0.6.1"
         fileName: "ewoc_dag-0.6.1.tar.gz"
         token: ${{ secrets.CS_ORG_TOKEN }}
