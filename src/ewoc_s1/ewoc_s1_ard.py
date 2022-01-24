@@ -23,7 +23,7 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
                    clean_input_file=False):
     
     relative_orbit= 'TODO' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
-    
+
     # TODO provide a more strict regex
     s1_process_output_filepath_vv = sorted(s1_process_output_dirpath.glob('*vv*.tif'))[0]
     s1_process_output_filepath_vh = sorted(s1_process_output_dirpath.glob('*vh*.tif'))[0]

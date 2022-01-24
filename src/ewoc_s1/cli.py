@@ -8,7 +8,7 @@ import shutil
 from tempfile import gettempdir
 from typing import List
 
-from dataship.dag.srtm_dag import get_srtm1s
+from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id
 
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard
@@ -25,9 +25,13 @@ def _get_default_prod_id()->str:
     return f"0000_000_{str_now}"
 
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
-                       dem_dirpath=None, working_dirpath_root=Path(gettempdir()),
+                       working_dirpath_root=Path(gettempdir()),
                        clean=True, upload_outputs=True,
-                       data_source='creodias_eodata', dem_source='creodias_eodata'):
+                       data_source='creodias', dem_source='creodias', production_id:str=None):
+
+    if production_id is None:
+        logger.warning("Use computed production id but we must used the one in wp")
+    production_id = _get_default_prod_id()
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
@@ -45,14 +49,16 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         wd_dirpath_tile = working_dirpath / s2_tile_id
         wd_dirpath_tile.mkdir(exist_ok=True, parents=True)
 
-        if dem_dirpath is None:
+        if not Path(dem_source).is_dir():
             dem_dirpath = wd_dirpath_tile / 'dem'
             dem_dirpath.mkdir(exist_ok=True, parents=True)
             try:
-                get_srtm1s(s2_tile_id, dem_dirpath, source=dem_source)
+                get_srtm_from_s2_tile_id(s2_tile_id, dem_dirpath, source=dem_source)
             except:
                 logger.critical('No elevation available!')
                 return
+        else:
+            dem_dirpath = Path(dem_source)
 
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
             logger.info('%s will be process for %s!', s1_prd_ids, date_key)
@@ -74,27 +80,35 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 
 
 def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
-                        dem_dirpath=None, working_dirpath_root=Path(gettempdir()),
-                        clean=False, upload_outputs=False,
-                        data_source='creodias_eodata', dem_source='creodias_eodata'):
+                        working_dirpath_root=Path(gettempdir()),
+                        clean:bool=False, upload_outputs:bool=False,
+                        data_source:str='creodias', dem_source:str='creodias',
+                        production_id:str=None):
 
+    if production_id is None:
+        production_id=_get_default_prod_id()
+        print(production_id)
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_pid'
     working_dirpath.mkdir(exist_ok=True)
 
-    if dem_dirpath is None:
+    if not Path(dem_source).is_dir():
         dem_dirpath = working_dirpath / 'dem' / s2_tile_id
         dem_dirpath.mkdir(exist_ok=True, parents=True)
         try:
-            get_srtm1s(s2_tile_id, dem_dirpath, source=dem_source)
+            get_srtm_from_s2_tile_id(s2_tile_id,
+                out_dirpath= dem_dirpath,
+                source=dem_source)
         except:
             logger.critical('No elevation available!')
             return
+    else:
+        dem_dirpath = Path(dem_source)
 
     s1_ard_keys = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
                     dem_dirpath, working_dirpath,
                     clean=clean, upload_outputs=upload_outputs,
-                    data_source=data_source)
+                    data_source=data_source, production_id=production_id)
 
     if clean:
         shutil.rmtree(working_dirpath)
@@ -129,15 +143,14 @@ def parse_args(args:List[str]):
         help="Output Dirpath",
         type=Path,
         default=Path(gettempdir()))
-    parser.add_argument("--dem_dirpath", dest="dem_dirpath", help="DEM dirpath", type=Path)
     parser.add_argument("-w", dest="working_dirpath", help="Working dirpath", type=Path,
         default=Path(gettempdir()))
 
     parser.add_argument("--no-clean",
-        action='store_true',
+        action='store_false',
         help= 'Avoid to clean all dirs and files')
     parser.add_argument("--no-upload",
-        action='store_true',
+        action='store_false',
         help= 'Skip the upload of ard files to s3 bucket')
 
     parser.add_argument("--prod-id",
@@ -219,16 +232,16 @@ def main(args:List[str]):
 
         logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...", args.s1_prd_ids, args.s2_tile_id)
         generate_s1_ard_from_pids(args.s1_prd_ids, args.s2_tile_id,
-            args.out_dirpath, dem_dirpath=args.dem_dirpath, working_dirpath_root=args.working_dirpath,
+            args.out_dirpath, working_dirpath_root=args.working_dirpath,
             clean=args.no_clean, upload_outputs=args.no_upload,
-            data_source=args.data_source, dem_source=args.dem_source)
+            data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
         logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!", args.s1_prd_ids, args.s2_tile_id)
 
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
         generate_s1_ard_wp(args.work_plan, args.out_dirpath,
             args.dem_dirpath, args.working_dirpath,
-            upload_outputs=args.upload)
+            upload_outputs=args.upload, production_id=args.prod_id)
         logger.info("Generation of the EWoC workplan %s for S1 part is ended!", args.work_plan)
 
 
