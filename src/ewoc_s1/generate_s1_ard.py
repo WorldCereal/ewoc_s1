@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Path,
                     dem_dirpath: Path, working_dirpath: Path,
-                    clean: bool=True, upload_outputs: bool=True, data_source:str='creodias'):
+                    clean: bool=True, upload_outputs: bool=True, data_source:str='creodias',
+                    production_id:str=None):
 
     """ Generate S1 ARD from the products identified by their product id for the S2 tile id
     """
@@ -113,7 +114,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         try:
             from ewoc_dag.bucket.ewoc import EWOCARDBucket
             ewoc_ard_bucket = EWOCARDBucket()
-            ewoc_ard_bucket.upload_ard_prd(out_dirpath,'/test/')
+            ewoc_ard_bucket.upload_ard_prd(out_dirpath, production_id)
             #recursive_upload_dir_to_s3( get_s3_client(),
             #                            str(out_dirpath) + '/',
             #                            os.getenv('DEST_PREFIX', default = 'WORLDCEREAL_PREPROC/test_upload/'),

@@ -27,7 +27,11 @@ def _get_default_prod_id()->str:
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
                        working_dirpath_root=Path(gettempdir()),
                        clean=True, upload_outputs=True,
-                       data_source='creodias', dem_source='creodias'):
+                       data_source='creodias', dem_source='creodias', production_id:str=None):
+
+    if production_id is None:
+        logger.warning("Use computed production id but we must used the one in wp")
+    production_id = _get_default_prod_id()
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
@@ -77,9 +81,13 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 
 def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
                         working_dirpath_root=Path(gettempdir()),
-                        clean=False, upload_outputs=False,
-                        data_source='creodias', dem_source='creodias'):
+                        clean:bool=False, upload_outputs:bool=False,
+                        data_source:str='creodias', dem_source:str='creodias',
+                        production_id:str=None):
 
+    if production_id is None:
+        production_id=_get_default_prod_id()
+        print(production_id)
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_pid'
     working_dirpath.mkdir(exist_ok=True)
@@ -100,7 +108,7 @@ def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
     s1_ard_keys = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
                     dem_dirpath, working_dirpath,
                     clean=clean, upload_outputs=upload_outputs,
-                    data_source=data_source)
+                    data_source=data_source, production_id=production_id)
 
     if clean:
         shutil.rmtree(working_dirpath)
@@ -226,14 +234,14 @@ def main(args:List[str]):
         generate_s1_ard_from_pids(args.s1_prd_ids, args.s2_tile_id,
             args.out_dirpath, working_dirpath_root=args.working_dirpath,
             clean=args.no_clean, upload_outputs=args.no_upload,
-            data_source=args.data_source, dem_source=args.dem_source)
+            data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
         logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!", args.s1_prd_ids, args.s2_tile_id)
 
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
         generate_s1_ard_wp(args.work_plan, args.out_dirpath,
             args.dem_dirpath, args.working_dirpath,
-            upload_outputs=args.upload)
+            upload_outputs=args.upload, production_id=args.prod_id)
         logger.info("Generation of the EWoC workplan %s for S1 part is ended!", args.work_plan)
 
 
