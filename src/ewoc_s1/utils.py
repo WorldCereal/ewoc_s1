@@ -10,12 +10,20 @@ from ewoc_s1.s1_prd_id import S1PrdIdInfo
 
 logger = logging.getLogger(__name__)
 
-def to_s1tiling_configfile(out_dirpath: Path, s1_input_dirpath: Path, dem_dirpath: Path, working_dirpath: Path, s2_tile_id: str, 
+def to_s1tiling_configfile(out_dirpath: Path,
+                           s1_input_dirpath: Path,
+                           dem_dirpath: Path,
+                           working_dirpath: Path,
+                           s2_tile_id: str,
                            cluster_config,
-                           calibration_method :str= 'sigma', output_spatial_resolution: int=20, remove_thermal_noise: bool=True, 
-                           ortho_interpol_method:str='linear', generate_mask: bool=False, log_level:int = logging.INFO):
+                           calibration_method :str= 'sigma',
+                           output_spatial_resolution: int=20,
+                           remove_thermal_noise: bool=True,
+                           ortho_interpol_method:str='linear',
+                           generate_mask: bool=False, log_level:int = logging.INFO):
 
-    optimal_ram, optimal_nb_process, optimal_nb_otb_threads = cluster_config.compute_optimal_cluster_config()
+    optimal_ram, optimal_nb_process, optimal_nb_otb_threads = \
+        cluster_config.compute_optimal_cluster_config()
 
     config = configparser.ConfigParser()
     config['Paths'] = {'output': str(out_dirpath),
@@ -49,7 +57,7 @@ def to_s1tiling_configfile(out_dirpath: Path, s1_input_dirpath: Path, dem_dirpat
     config['Mask'] = {'generate_border_mask' : generate_mask}
 
     config_filepath = working_dirpath / 'S1Processor.cfg'
-    with open(config_filepath, 'w') as configfile:
+    with open(config_filepath, 'w', encoding="utf8") as configfile:
         config.write(configfile)
 
     return config_filepath
@@ -57,8 +65,8 @@ def to_s1tiling_configfile(out_dirpath: Path, s1_input_dirpath: Path, dem_dirpat
 class EwocWorkPlanReader():
 
     def __init__(self, workplan_filepath: Path) -> None:
-        with open(workplan_filepath) as f:
-            self._wp = json.load(f)
+        with open(workplan_filepath, encoding="utf8") as f_wp:
+            self._wp = json.load(f_wp)
 
         self._tile_ids = []
         for tile in self._wp['tiles']:
@@ -126,10 +134,12 @@ class ClusterConfig():
         logger.info('Optimal RAM for %s product(s) = %s / %s',  self._nb_products,
                                                                 int(optimal_ram/mb_factor),
                                                                 int(self._total_ram/mb_factor))
-        logger.info('Optimal nb process for %s product(s) = %s', self._nb_products, optimal_nb_process)
-        logger.info('Optimal nb otb threads for %s product(s) = %s / %s / %s', self._nb_products,
-                                                                              optimal_nb_otb_threads,
-                                                                              self._physical_core,
-                                                                              self._total_core)
+        logger.info('Optimal nb process for %s product(s) = %s', self._nb_products,
+            optimal_nb_process)
+        logger.info('Optimal nb otb threads for %s product(s) = %s / %s / %s',
+            self._nb_products,
+            optimal_nb_otb_threads,
+            self._physical_core,
+            self._total_core)
 
         return int(optimal_ram/mb_factor), optimal_nb_process, optimal_nb_otb_threads

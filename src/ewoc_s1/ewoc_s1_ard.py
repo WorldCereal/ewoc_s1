@@ -21,9 +21,9 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
                    s2_tile_id,
                    rename_only=False,
                    clean_input_file=False):
-    
-    relative_orbit= 'TODO' # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
 
+    # TODO retrieve from GDAL MTD of the output s1_process file or from mtd of the input product
+    relative_orbit= 'TODO'
     # TODO provide a more strict regex
     s1_process_output_filepath_vv = sorted(s1_process_output_dirpath.glob('*vv*.tif'))[0]
     s1_process_output_filepath_vh = sorted(s1_process_output_dirpath.glob('*vh*.tif'))[0]
@@ -45,7 +45,8 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
     logger.debug('Create output directory: %s', ewoc_output_dirpath)
     ewoc_output_dirpath.mkdir(exist_ok=True, parents=True)
 
-    calibration_type = 'SIGMA0' # TODO retrieve from GDAL MTD of the output s1_process file or from parameters
+    # TODO retrieve from GDAL MTD of the output s1_process file or from parameters
+    calibration_type = 'SIGMA0'
     output_file_ext= '.tif'
     ewoc_output_filename_elt = ewoc_output_dirname_elt + [calibration_type]
     ewoc_output_filename_vv = '_'.join(ewoc_output_filename_elt + ['VV']) + output_file_ext
@@ -65,14 +66,18 @@ def to_ewoc_s1_ard(s1_process_output_dirpath,
         ewoc_gdal_dtype = 'uint16'
         ewoc_nodata = 0
 
-        to_ewoc_s1_raster(s1_process_output_filepath_vv, ewoc_output_filepath_vv, nodata_in=65535, nodata_out=65535)
-        to_ewoc_s1_raster(s1_process_output_filepath_vh, ewoc_output_filepath_vh, nodata_in=65535, nodata_out=65535)
+        to_ewoc_s1_raster(s1_process_output_filepath_vv, ewoc_output_filepath_vv,
+            nodata_in=65535, nodata_out=65535)
+        to_ewoc_s1_raster(s1_process_output_filepath_vh, ewoc_output_filepath_vh,
+            nodata_in=65535, nodata_out=65535)
 
         if clean_input_file:
             s1_process_output_filepath_vv.unlink()
             s1_process_output_filepath_vh.unlink()
 
-def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath, blocksize=512, nodata_in=0, nodata_out=0, compress=True):
+def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath,
+                      blocksize=512,
+                      nodata_in=0, nodata_out=0, compress=True):
 
     s1_process_noized_dirpath = os.path.abspath(os.path.join(os.path.dirname(s1_process_filepath),"../../s1process_noized/"))
     s1_process_noized_filepath = os.path.join(s1_process_noized_dirpath, os.path.basename(os.path.dirname(s1_process_filepath)))
