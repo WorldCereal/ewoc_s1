@@ -9,6 +9,7 @@ from tempfile import gettempdir
 from typing import List
 
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id
+from ewoc_dag.s1_dag import get_s1_default_provider
 
 from ewoc_s1 import __version__
 from ewoc_s1.generate_s1_ard import generate_s1_ard
@@ -27,7 +28,8 @@ def _get_default_prod_id()->str:
 def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
                        working_dirpath_root=Path(gettempdir()),
                        clean=True, upload_outputs=True,
-                       data_source='creodias', dem_source='creodias', production_id:str=None):
+                       data_source=get_s1_default_provider(),
+                       dem_source='esa', production_id:str=None):
 
     if production_id is None:
         logger.warning("Use computed production id but we must used the one in wp")
@@ -82,7 +84,8 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
 def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
                         working_dirpath_root=Path(gettempdir()),
                         clean:bool=False, upload_outputs:bool=False,
-                        data_source:str='creodias', dem_source:str='creodias',
+                        data_source:str=get_s1_default_provider(),
+                        dem_source:str='esa',
                         production_id:str=None):
 
     if production_id is None:
@@ -98,7 +101,7 @@ def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
         try:
             get_srtm_from_s2_tile_id(s2_tile_id,
                 out_dirpath= dem_dirpath,
-                source=dem_source)
+                source=dem_source, resolution='1s')
         except:
             logger.critical('No elevation available!')
             return
@@ -160,10 +163,10 @@ def parse_args(args:List[str]):
 
     parser.add_argument("--data-source", dest="data_source", help= 'Source of the S1 input data',
                         type=str,
-                        default='creodias_eodata')
+                        default=get_s1_default_provider())
     parser.add_argument("--dem-source", dest="dem_source", help= 'Source of the DEM data',
                         type=str,
-                        default='creodias_eodata')
+                        default='esa')
     parser.add_argument(
         "-v",
         "--verbose",
@@ -230,12 +233,14 @@ def main(args:List[str]):
 
     if args.subparser_name == "prd_ids":
 
-        logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...", args.s1_prd_ids, args.s2_tile_id)
+        logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...",
+            args.s1_prd_ids, args.s2_tile_id)
         generate_s1_ard_from_pids(args.s1_prd_ids, args.s2_tile_id,
             args.out_dirpath, working_dirpath_root=args.working_dirpath,
             clean=args.no_clean, upload_outputs=args.no_upload,
             data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
-        logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!", args.s1_prd_ids, args.s2_tile_id)
+        logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!",
+            args.s1_prd_ids, args.s2_tile_id)
 
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
