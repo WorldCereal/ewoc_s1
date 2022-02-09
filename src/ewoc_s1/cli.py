@@ -25,11 +25,11 @@ def _get_default_prod_id()->str:
     str_now=datetime.now().strftime("%Y%m%dT%H%M%S")
     return f"0000_000_{str_now}"
 
-def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
+def generate_s1_ard_wp(work_plan_filepath:Path, out_dirpath_root:Path,
                        working_dirpath_root=Path(gettempdir()),
-                       clean=True, upload_outputs=True,
-                       data_source=get_s1_default_provider(),
-                       dem_source='esa', production_id:str=None):
+                       clean:bool=True, upload_outputs:bool=True,
+                       data_source:str=get_s1_default_provider(),
+                       dem_source:str='esa', production_id:str=None):
 
     if production_id is None:
         logger.warning("Use computed production id but we must used the one in wp")
@@ -81,8 +81,8 @@ def generate_s1_ard_wp(work_plan_filepath, out_dirpath_root,
         shutil.rmtree(working_dirpath)
 
 
-def generate_s1_ard_from_pids(s1_prd_ids, s2_tile_id, out_dirpath_root,
-                        working_dirpath_root=Path(gettempdir()),
+def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str, out_dirpath_root:Path,
+                        working_dirpath_root:Path=Path(gettempdir()),
                         clean:bool=False, upload_outputs:bool=False,
                         data_source:str=get_s1_default_provider(),
                         dem_source:str='esa',
@@ -193,7 +193,7 @@ def parse_args(args:List[str]):
     parser_prd_ids.add_argument(dest="s1_prd_ids", help="Sentinel-1 Product ids", nargs='*')
 
     parser_wp = subparsers.add_parser('wp', help='Generate EWoC L8 ARD from EWoC workplan')
-    parser_wp.add_argument(dest="wp",
+    parser_wp.add_argument(dest="work_plan",
         help="EWoC workplan in json format",
         type=Path)
 
@@ -245,8 +245,10 @@ def main(args:List[str]):
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
         generate_s1_ard_wp(args.work_plan, args.out_dirpath,
-            args.dem_dirpath, args.working_dirpath,
-            upload_outputs=args.upload, production_id=args.prod_id)
+            args.working_dirpath,
+            clean=args.no_clean, upload_outputs=args.no_upload,
+            data_source=args.data_source, dem_source=args.dem_source,
+            production_id=args.prod_id)
         logger.info("Generation of the EWoC workplan %s for S1 part is ended!", args.work_plan)
 
 

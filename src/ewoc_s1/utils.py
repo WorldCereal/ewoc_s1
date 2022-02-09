@@ -55,15 +55,14 @@ def to_s1tiling_configfile(out_dirpath: Path, s1_input_dirpath: Path, dem_dirpat
     return config_filepath
 
 class EwocWorkPlanReader():
-    PROD_TYPE = {"S2":"S2_PROC","L8":"L8_PROC","S1":"SAR_PROC"}    
 
     def __init__(self, workplan_filepath: Path) -> None:
         with open(workplan_filepath) as f:
             self._wp = json.load(f)
-        
-        self._tile_ids = list()
-        for tile in self._wp:
-            self._tile_ids.append(tile)
+
+        self._tile_ids = []
+        for tile in self._wp['tiles']:
+            self._tile_ids.append(tile['tile_id'])
 
     @property
     def tile_ids(self)-> List[str]:
@@ -71,21 +70,22 @@ class EwocWorkPlanReader():
 
     def get_nb_s1_prd(self, tile_id:str)->int:
         if tile_id in self._tile_ids:
-            return len(self._wp[tile_id]['SAR_PROC']['INPUTS'])
-        else:
-            return 0
+            for tile in self._wp['tiles']:
+                if tile['tile_id'] == tile_id:
+                    return len(tile['s1_ids'])
+        return 0
 
     def get_s1_prd_ids(self, tile_id:str)-> List[str]:
         if tile_id in self._tile_ids:
-            return self._wp[tile_id]['SAR_PROC']['INPUTS']
-        else:
-            return None
-    
+            for tile in self._wp['tiles']:
+                if tile['tile_id'] == tile_id:
+                    return tile['s1_ids']
+
     def get_s1_prd_ids_by_date(self, tile_id: str)-> Dict:
-        prd_ids = self.get_s1_prd_ids(tile_id)
-        out = dict()
-        for prd_id in prd_ids:
-            out[str(S1PrdIdInfo(prd_id[0]).start_time.date())] = prd_id
+        prd_ids_by_date = self.get_s1_prd_ids(tile_id)
+        out = {}
+        for prd_ids in prd_ids_by_date:
+            out[str(S1PrdIdInfo(prd_ids[0]).start_time.date())] = prd_ids
 
         return out
 
