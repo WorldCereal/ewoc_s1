@@ -8,7 +8,7 @@ import shutil
 from tempfile import gettempdir
 from typing import List
 
-from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id
+from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
 from ewoc_dag.s1_dag import get_s1_default_provider
 
 from ewoc_s1 import __version__
@@ -29,7 +29,7 @@ def generate_s1_ard_wp(work_plan_filepath:Path, out_dirpath_root:Path,
                        working_dirpath_root=Path(gettempdir()),
                        clean:bool=True, upload_outputs:bool=True,
                        data_source:str=get_s1_default_provider(),
-                       dem_source:str='esa', production_id:str=None):
+                       dem_source:str=get_srtm_1s_default_provider(), production_id:str=None):
 
     if production_id is None:
         logger.warning("Use computed production id but we must used the one in wp")
@@ -85,7 +85,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str, out_dirpath_
                         working_dirpath_root:Path=Path(gettempdir()),
                         clean:bool=False, upload_outputs:bool=False,
                         data_source:str=get_s1_default_provider(),
-                        dem_source:str='esa',
+                        dem_source:str=get_srtm_1s_default_provider(),
                         production_id:str=None):
 
     if production_id is None:
@@ -166,7 +166,7 @@ def parse_args(args:List[str]):
                         default=get_s1_default_provider())
     parser.add_argument("--dem-source", dest="dem_source", help= 'Source of the DEM data',
                         type=str,
-                        default='esa')
+                        default=get_srtm_1s_default_provider())
     parser.add_argument(
         "-v",
         "--verbose",
