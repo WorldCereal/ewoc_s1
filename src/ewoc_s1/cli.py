@@ -60,6 +60,7 @@ def generate_s1_ard_wp(work_plan_filepath:Path, out_dirpath_root:Path,
                 logger.critical('No elevation available!')
                 return
         else:
+            logger.info('Use local directory for DEM!')
             dem_dirpath = Path(dem_source)
 
         for date_key, s1_prd_ids in wp_reader.get_s1_prd_ids_by_date(s2_tile_id).items():
@@ -106,6 +107,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str, out_dirpath_
             logger.critical('No elevation available!')
             return
     else:
+        logger.info('Use local directory for DEM!')
         dem_dirpath = Path(dem_source)
 
     s1_ard_keys = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
