@@ -24,8 +24,8 @@ jobs:
       uses: robinraju/release-downloader@v1.1
       with:
         repository: "WorldCereal/ewoc_dataship"
-        tag: "0.6.4"
-        fileName: "ewoc_dag-0.6.4.tar.gz"
+        tag: "0.6.5"
+        fileName: "ewoc_dag-0.6.5.tar.gz"
         token: ${{ secrets.CS_ORG_TOKEN }}
 
     - name: Install dependencies
