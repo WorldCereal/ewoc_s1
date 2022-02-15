@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 import shutil
-from typing import List
+from typing import List, Tuple
 
 from ewoc_dag.bucket.ewoc import EWOCARDBucket
 from ewoc_dag.s1_dag import get_s1_product
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Path,
                     dem_dirpath: Path, working_dirpath: Path,
                     clean: bool=True, upload_outputs: bool=True, data_source:str='creodias',
-                    production_id:str=None)-> str:
+                    production_id:str=None)-> Tuple[int, str]:
 
     """ Generate S1 ARD from the products identified by their product id for the S2 tile id
     """
@@ -113,9 +113,10 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
     if upload_outputs:
         try:
             logger.info('Try to push %s to EWoC ARD bucket', out_dirpath)
-            __unused, __unused, s1_ard_s3path = \
+            nb_s1_ard_file, __unused, s1_ard_s3path = \
                 EWOCARDBucket().upload_ard_prd(out_dirpath, production_id)
-
+            logger.info("Succeed to upload %s S1 ARD files to %s",
+                nb_s1_ard_file, s1_ard_s3path)
         except:
             logger.error('Push to EWoC ARD bucket failed!')
             return
@@ -125,5 +126,5 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
             logger.info('Remove %s', out_dirpath)
             shutil.rmtree(out_dirpath)
 
-        return s1_ard_s3path
+        return nb_s1_ard_file, s1_ard_s3path
     return

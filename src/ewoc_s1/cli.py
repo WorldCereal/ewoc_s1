@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import shutil
 from tempfile import gettempdir
-from typing import List
+from typing import List, Tuple
 
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
 from ewoc_dag.s1_dag import get_s1_default_provider
@@ -91,7 +91,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                         clean:bool=True, upload_outputs:bool=True,
                         data_source:str=get_s1_default_provider(),
                         dem_source:str=get_srtm_1s_default_provider(),
-                        production_id:str=None)->str:
+                        production_id:str=None)->Tuple[int, str]:
 
     if production_id is None:
         production_id=_get_default_prod_id()
@@ -114,7 +114,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
         logger.info('Use local directory for DEM!')
         dem_dirpath = Path(dem_source)
 
-    s1_ard_s3path = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
+    nb_s1_ard_files, s1_ard_s3path = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
                     dem_dirpath, working_dirpath,
                     clean=clean, upload_outputs=upload_outputs,
                     data_source=data_source, production_id=production_id)
@@ -122,7 +122,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
     if clean:
         shutil.rmtree(working_dirpath)
 
-    return s1_ard_s3path
+    return nb_s1_ard_files, s1_ard_s3path
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
@@ -241,7 +241,8 @@ def main(args:List[str]):
 
         logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...",
             args.s1_prd_ids, args.s2_tile_id)
-        s1_ard_s3path=generate_s1_ard_from_pids(args.s1_prd_ids, args.s2_tile_id,
+        nb_s1_ard_files, s1_ard_s3path=generate_s1_ard_from_pids(
+            args.s1_prd_ids, args.s2_tile_id,
             args.out_dirpath, working_dirpath_root=args.working_dirpath,
             clean=args.no_clean, upload_outputs=args.no_upload,
             data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
@@ -249,6 +250,8 @@ def main(args:List[str]):
             args.s1_prd_ids, args.s2_tile_id)
         if not args.no_upload:
             logger.info("S1 ARD product is available at %s",s1_ard_s3path)
+            # TODO Remove print!
+            print('Uploaded % tif files to bucket | %s',nb_s1_ard_files, s1_ard_s3path)
 
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
