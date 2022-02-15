@@ -70,7 +70,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
 
     if not any(s1_input_dir.iterdir()):
         logger.error('No S1 products downloaded!')
-        return
+        raise RuntimeError("Generate S1 ARD failed during S1 data retrieval")
 
     try:
         s1_process(str(to_s1tiling_configfile(wd_s1process_dirpath_root,
@@ -80,7 +80,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                                             s2_tile_id, ClusterConfig(len(s1_prd_ids)))))
     except:
         logger.error('S1 process failed!')
-        return
+        raise RuntimeError("Generate S1 ARD failed during S1 processing")
 
     try:
         s1_process(str(to_s1tiling_configfile(wd_s1process_noized_dirpath_root,
@@ -92,7 +92,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                                             remove_thermal_noise=False)))
     except:
         logger.error('S1 process noized failed!')
-        return
+        raise RuntimeError("Generate S1 ARD failed during S1 processing with no thermal noise removal")
 
     # If sucess of s1process remove the input dir
     if clean:
@@ -104,7 +104,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                         rename_only=False, clean_input_file=clean)
     except:
         logger.error('Format to ewoc product failed!')
-        return
+        raise RuntimeError("Generate S1 ARD failed during ARD data formating")
 
     # if sucess of format output, remove the s1 process wd dir
     if clean:
@@ -119,7 +119,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                 nb_s1_ard_file, s1_ard_s3path)
         except:
             logger.error('Push to EWoC ARD bucket failed!')
-            return
+            raise RuntimeError("Generate S1 ARD failed during the upload of ARD data to bucket")
 
         # if sucess remove from disk the data pushed to the bucket
         if clean:
@@ -127,4 +127,4 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
             shutil.rmtree(out_dirpath)
 
         return nb_s1_ard_file, s1_ard_s3path
-    return
+    return 2, ''

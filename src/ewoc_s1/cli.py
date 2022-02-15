@@ -248,10 +248,10 @@ def main(args:List[str]):
             data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
         logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!",
             args.s1_prd_ids, args.s2_tile_id)
-        if not args.no_upload:
+        if args.no_upload:
             logger.info("S1 ARD product is available at %s",s1_ard_s3path)
             # TODO Remove print!
-            print('Uploaded % tif files to bucket | %s',nb_s1_ard_files, s1_ard_s3path)
+            print(f'Uploaded {nb_s1_ard_files} tif files to bucket | {s1_ard_s3path}')
 
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
