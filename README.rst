@@ -22,10 +22,17 @@ To generate EWoC ARD, the ewoc_s1 CLI perform the following tasks:
 
 Installation
 ============
+
 TODO
 
 Usage
 =====
+
+To download and upload data you need to configure some env variable from *ewoc_dag*
+ as described `here <https://github.com/WorldCereal/ewoc_dataship#usage>`.
+
+CLI
+----
 
 The package provides one CLI command:
 
@@ -53,5 +60,18 @@ The package provides one CLI command:
 
     ewoc_generate_s1_ard_wp /path/to/workplan.json
 
-To download and upload data you need to configure some env variable from *ewoc_dag*
- as described `here <https://github.com/WorldCereal/ewoc_dataship#usage>`.
+If you add the *-v* option the CLI will output the end of the processing. If not only a print
+ statement is done.
+
+Python API
+-----------
+
+You can run the following code on your own python code to generate the S1 ARD.
+
+.. code-block:: python
+
+from ewoc_s1.cli import generate_s1_ard_from_pids
+
+nb_s1_ard_files, s1_ard_s3path = generate_s1_ard_from_pids(['S1_PRD_ID_1','S1_PRD_ID_2',], 'S2_TILE_ID', production_id='prod_id')
+
+
