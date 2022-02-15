@@ -25,15 +25,18 @@ def _get_default_prod_id()->str:
     str_now=datetime.now().strftime("%Y%m%dT%H%M%S")
     return f"0000_000_{str_now}"
 
-def generate_s1_ard_wp(work_plan_filepath:Path, out_dirpath_root:Path,
+def generate_s1_ard_wp(work_plan_filepath:Path,
+                       out_dirpath_root:Path=Path(gettempdir()),
                        working_dirpath_root=Path(gettempdir()),
                        clean:bool=True, upload_outputs:bool=True,
                        data_source:str=get_s1_default_provider(),
-                       dem_source:str=get_srtm_1s_default_provider(), production_id:str=None):
+                       dem_source:str=get_srtm_1s_default_provider(),
+                       production_id:str=None):
 
     if production_id is None:
         logger.warning("Use computed production id but we must used the one in wp")
-    production_id = _get_default_prod_id()
+        production_id = _get_default_prod_id()
+        logger.debug('production id: %s', production_id)
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_wp'
     working_dirpath.mkdir(exist_ok=True)
@@ -82,16 +85,17 @@ def generate_s1_ard_wp(work_plan_filepath:Path, out_dirpath_root:Path,
         shutil.rmtree(working_dirpath)
 
 
-def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str, out_dirpath_root:Path,
+def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
+                        out_dirpath_root:Path=Path(gettempdir()),
                         working_dirpath_root:Path=Path(gettempdir()),
-                        clean:bool=False, upload_outputs:bool=False,
+                        clean:bool=True, upload_outputs:bool=True,
                         data_source:str=get_s1_default_provider(),
                         dem_source:str=get_srtm_1s_default_provider(),
-                        production_id:str=None):
+                        production_id:str=None)->str:
 
     if production_id is None:
         production_id=_get_default_prod_id()
-        print(production_id)
+        logger.debug('production id: %s', production_id)
 
     working_dirpath = working_dirpath_root / 'ewoc_s1_pid'
     working_dirpath.mkdir(exist_ok=True)
@@ -110,7 +114,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str, out_dirpath_
         logger.info('Use local directory for DEM!')
         dem_dirpath = Path(dem_source)
 
-    s1_ard_keys = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
+    s1_ard_s3path = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
                     dem_dirpath, working_dirpath,
                     clean=clean, upload_outputs=upload_outputs,
                     data_source=data_source, production_id=production_id)
@@ -118,7 +122,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str, out_dirpath_
     if clean:
         shutil.rmtree(working_dirpath)
 
-    return s1_ard_keys
+    return s1_ard_s3path
 
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
@@ -160,8 +164,8 @@ def parse_args(args:List[str]):
 
     parser.add_argument("--prod-id",
         dest="prod_id",
-        help="Production ID that will be used to upload to s3 bucket, by default it is computed internally")
-
+        help="Production ID that will be used to upload to s3 bucket, \
+            by default it is computed internally")
 
     parser.add_argument("--data-source", dest="data_source", help= 'Source of the S1 input data',
                         type=str,
@@ -237,12 +241,14 @@ def main(args:List[str]):
 
         logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...",
             args.s1_prd_ids, args.s2_tile_id)
-        generate_s1_ard_from_pids(args.s1_prd_ids, args.s2_tile_id,
+        s1_ard_s3path=generate_s1_ard_from_pids(args.s1_prd_ids, args.s2_tile_id,
             args.out_dirpath, working_dirpath_root=args.working_dirpath,
             clean=args.no_clean, upload_outputs=args.no_upload,
             data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
         logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!",
             args.s1_prd_ids, args.s2_tile_id)
+        if not args.no_upload:
+            logger.info("S1 ARD product is available at %s",s1_ard_s3path)
 
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)

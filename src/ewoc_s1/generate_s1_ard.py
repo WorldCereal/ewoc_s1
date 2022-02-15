@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Path,
                     dem_dirpath: Path, working_dirpath: Path,
                     clean: bool=True, upload_outputs: bool=True, data_source:str='creodias',
-                    production_id:str=None):
+                    production_id:str=None)-> str:
 
     """ Generate S1 ARD from the products identified by their product id for the S2 tile id
     """
@@ -111,15 +111,13 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         shutil.rmtree(wd_s1process_dirpath_root)
 
     if upload_outputs:
-        logger.info('Push %s to bucket', out_dirpath)
         try:
-            EWOCARDBucket().upload_ard_prd(out_dirpath, production_id)
-            s1_ard_keys = []
-            for s1_ard_key in sorted(out_dirpath.rglob('*.tif')):
-                s1_ard_keys.append(str(s1_ard_key.relative_to(out_dirpath)))
+            logger.info('Try to push %s to EWoC ARD bucket', out_dirpath)
+            __unused, __unused, s1_ard_s3path = \
+                EWOCARDBucket().upload_ard_prd(out_dirpath, production_id)
 
         except:
-            logger.error('Push to ewoc bucket failed!')
+            logger.error('Push to EWoC ARD bucket failed!')
             return
 
         # if sucess remove from disk the data pushed to the bucket
@@ -127,4 +125,5 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
             logger.info('Remove %s', out_dirpath)
             shutil.rmtree(out_dirpath)
 
-        return s1_ard_keys
+        return s1_ard_s3path
+    return
