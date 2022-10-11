@@ -11,8 +11,8 @@ from typing import List, Tuple
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
 from ewoc_dag.s1_dag import get_s1_default_provider
 
-from ewoc_s1 import __version__
-from ewoc_s1.generate_s1_ard import generate_s1_ard
+from ewoc_s1 import EWOC_S1_DEM_DOWNLOAD_ERROR, EWOC_S1_UNEXPECTED_ERROR, __version__
+from ewoc_s1.generate_s1_ard import S1ARDProcessorBaseError, generate_s1_ard
 from ewoc_s1.utils import EwocWorkPlanReader
 
 __author__ = "Mickael Savinaud"
@@ -20,6 +20,31 @@ __copyright__ = "Mickael Savinaud"
 __license__ = "MIT"
 
 logger = logging.getLogger(__name__)
+
+class S1DEMProcessorError(Exception):
+    """Exception raised for errors in the S1 ARD generation at DEM download step."""
+
+    def __init__(self, error):
+        self._error = error
+        self._message = "Error during DEM donwload:"
+        super().__init__(self._message)
+
+    def __str__(self):
+        return f"{self._message} {self._error} !"
+
+class S1ARDProcessorError(Exception):
+    """Exception raised for errors in the S1 ARD generation."""
+
+    def __init__(self, s2_tile_id, s1_prd_ids, s1_data_source, exit_code):
+        self._s2_tile_id = s2_tile_id
+        self._s1_prd_ids = s1_prd_ids
+        self._s1_data_source = s1_data_source
+        self.exit_code = exit_code
+        self._message = "Error during S1 ARD generation:"
+        super().__init__(self._message)
+
+    def __str__(self):
+        return f"{self._message} No S1 ARD on {self._s2_tile_id} for {self._s1_prd_ids} from {self._s1_data_source} !"
 
 def _get_default_prod_id()->str:
     str_now=datetime.now().strftime("%Y%m%dT%H%M%S")
@@ -108,19 +133,23 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                 out_dirpath= dem_dirpath,
                 source=dem_source, resolution='1s')
         except:
-            logger.critical('No elevation available!')
-            return
+            logger.error('No elevation available!')
+            raise S1DEMProcessorError(f'No elevation for {s2_tile_id} from {dem_source}')
     else:
         logger.info('Use local directory for DEM!')
         dem_dirpath = Path(dem_source)
 
-    nb_s1_ard_files, s1_ard_s3path = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
-                    dem_dirpath, working_dirpath,
-                    clean=clean, upload_outputs=upload_outputs,
-                    data_source=data_source, production_id=production_id)
-
-    if clean:
-        shutil.rmtree(working_dirpath)
+    try:
+        nb_s1_ard_files, s1_ard_s3path = generate_s1_ard(s1_prd_ids, s2_tile_id, out_dirpath_root,
+                        dem_dirpath, working_dirpath,
+                        clean=clean, upload_outputs=upload_outputs,
+                        data_source=data_source, production_id=production_id)
+    except S1ARDProcessorBaseError as exc:
+        logger.error(exc)
+        raise S1ARDProcessorError(s2_tile_id, s1_prd_ids, data_source, exc.exit_code)
+    finally:
+        if clean:
+            shutil.rmtree(working_dirpath)
 
     return nb_s1_ard_files, s1_ard_s3path
 
@@ -241,17 +270,29 @@ def main(args:List[str]):
 
         logger.debug("Starting Generate S1 ARD for %s over %s MGRS Tile ...",
             args.s1_prd_ids, args.s2_tile_id)
-        nb_s1_ard_files, s1_ard_s3path=generate_s1_ard_from_pids(
-            args.s1_prd_ids, args.s2_tile_id,
-            args.out_dirpath, working_dirpath_root=args.working_dirpath,
-            clean=args.no_clean, upload_outputs=args.no_upload,
-            data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
-        logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!",
-            args.s1_prd_ids, args.s2_tile_id)
-        if args.no_upload:
-            logger.info("S1 ARD product is available at %s",s1_ard_s3path)
-            # TODO Remove print!
-            print(f'Uploaded {nb_s1_ard_files} tif files to bucket | {s1_ard_s3path}')
+
+        try:
+            nb_s1_ard_files, s1_ard_s3path=generate_s1_ard_from_pids(
+                args.s1_prd_ids, args.s2_tile_id,
+                args.out_dirpath, working_dirpath_root=args.working_dirpath,
+                clean=args.no_clean, upload_outputs=args.no_upload,
+                data_source=args.data_source, dem_source=args.dem_source, production_id=args.prod_id)
+        except S1DEMProcessorError as exc:
+            logger.critical(exc)
+            sys.exit(EWOC_S1_DEM_DOWNLOAD_ERROR)
+        except S1ARDProcessorError as exc:
+            logger.critical(exc)
+            sys.exit(exc.exit_code)
+        except BaseException as exc:
+            logger.critical(f"Unexpected {exc=}, {type(exc)=}")
+            sys.exit(EWOC_S1_UNEXPECTED_ERROR)
+        else:
+            logger.info("Generation of S1 ARD for %s over %s MGRS Tile is ended!",
+                args.s1_prd_ids, args.s2_tile_id)
+            if args.no_upload:
+                logger.info("S1 ARD product is available at %s",s1_ard_s3path)
+                # TODO Remove print!
+                print(f'Uploaded {nb_s1_ard_files} tif files to bucket | {s1_ard_s3path}')
 
     elif args.subparser_name == "wp":
         logger.debug("Starting Generate S1 ARD for the workplan %s ...", args.work_plan)
