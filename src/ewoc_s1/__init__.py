@@ -14,3 +14,9 @@ except PackageNotFoundError:  # pragma: no cover
     __version__ = "unknown"
 finally:
     del version, PackageNotFoundError
+
+EWOC_S1_UNEXPECTED_ERROR = 1
+EWOC_S1_DEM_DOWNLOAD_ERROR = 2
+EWOC_S1_INPUT_DOWNLOAD_ERROR = 3
+EWOC_S1_PROCESSOR_ERROR = 4
+EWOC_S1_ARD_FORMAT_ERROR = 5
