@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import shutil
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import Optional, List, Tuple
 
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
 from ewoc_dag.s1_dag import get_s1_default_provider
@@ -56,7 +56,7 @@ def generate_s1_ard_wp(work_plan_filepath:Path,
                        clean:bool=True, upload_outputs:bool=True,
                        data_source:str=get_s1_default_provider(),
                        dem_source:str=get_srtm_1s_default_provider(),
-                       production_id:str=None):
+                       production_id: Optional[str]=None):
 
     if production_id is None:
         logger.warning("Use computed production id but we must used the one in wp")
@@ -116,7 +116,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                         clean:bool=True, upload_outputs:bool=True,
                         data_source:str=get_s1_default_provider(),
                         dem_source:str=get_srtm_1s_default_provider(),
-                        production_id:str=None)->Tuple[int, str]:
+                        production_id: Optional[str]=None)->Tuple[int, str]:
     """ Generate SAR ARD data from Sentinel-1 GRD products
 
     Args:
