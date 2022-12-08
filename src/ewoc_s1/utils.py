@@ -88,6 +88,7 @@ class EwocWorkPlanReader():
             for tile in self._wp['tiles']:
                 if tile['tile_id'] == tile_id:
                     return tile['s1_ids']
+        return []
 
     def get_s1_prd_ids_by_date(self, tile_id: str)-> Dict:
         prd_ids_by_date = self.get_s1_prd_ids(tile_id)
