@@ -127,7 +127,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         raise S1InputProcessorError(s1_prd_ids, data_source)
 
     # Manage failed products
-    logger.info("%s",  s1_prd_ids_error)
+    logger.warning("The following products are not available for processing: %s",  s1_prd_ids_error)
     if len(s1_prd_ids)==len(s1_prd_ids_error):
         raise S1InputProcessorError(s1_prd_ids, data_source)
     if s1_prd_ids_error:
