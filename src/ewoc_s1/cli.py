@@ -271,17 +271,17 @@ def setup_logging(loglevel):
     )
 
 
-def main(args:List[str]):
+def main(args_cli:List[str]):
     """Wrapper allowing :func:`generate_s1_ard` to be called with string arguments in a CLI fashion
 
     Instead of returning the value from :func:`fib`, it prints the result to the
     ``stdout`` in a nicely formatted message.
 
     Args:
-      args (List[str]): command line parameters as list of strings
+      args_cli (List[str]): command line parameters as list of strings
           (for example  ``["--verbose", "42"]``).
     """
-    args = parse_args(args)
+    args = parse_args(args_cli)
     setup_logging(args.loglevel)
     logger.debug(args)
 
