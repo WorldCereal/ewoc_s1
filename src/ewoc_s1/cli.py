@@ -178,11 +178,11 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
 # executable/script.
 
 
-def parse_args(args:List[str]):
+def parse_args(args_cli:List[str]):
     """Parse command line parameters
 
     Args:
-      args (List[str]): command line parameters as list of strings
+      args_cli (List[str]): command line parameters as list of strings
           (for example  ``["--help"]``).
 
     Returns:
@@ -251,7 +251,7 @@ def parse_args(args:List[str]):
         help="EWoC workplan in json format",
         type=Path)
 
-    args = parser.parse_args(args)
+    args = parser.parse_args(args_cli)
 
     if args.subparser_name is None:
         parser.print_help()
