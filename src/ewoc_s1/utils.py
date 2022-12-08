@@ -38,23 +38,23 @@ def to_s1tiling_configfile(out_dirpath: Path,
 
     config['Processing'] = {'mode' : s1_process_log_mode,
                             'calibration': calibration_method,
-                            'remove_thermal_noise': remove_thermal_noise,
-                            'output_spatial_resolution' : output_spatial_resolution,
-                            'orthorectification_gridspacing' : 4*output_spatial_resolution,
+                            'remove_thermal_noise': str(remove_thermal_noise),
+                            'output_spatial_resolution' : str(output_spatial_resolution),
+                            'orthorectification_gridspacing' : str(4*output_spatial_resolution),
                             'orthorectification_interpolation_method' : ortho_interpol_method,
                             'tiles': s2_tile_id,
-                            'tile_to_product_overlap_ratio' : 0.5,
+                            'tile_to_product_overlap_ratio' : str(0.5),
                             'nb_parallel_processes' : optimal_nb_process,
                             'ram_per_process' : optimal_ram,
                             'nb_otb_threads': optimal_nb_otb_threads,
                             }
 
-    config['DataSource'] = {'download' : False,
+    config['DataSource'] = {'download' : str(False),
                             'roi_by_tiles' : 'ALL',
                             'first_date' : '2016-06-01',
                             'last_date' : '2025-07-31',
                             'polarisation' : 'VV-VH'}
-    config['Mask'] = {'generate_border_mask' : generate_mask}
+    config['Mask'] = {'generate_border_mask' : str(generate_mask)}
 
     config_filepath = working_dirpath / 'S1Processor.cfg'
     with open(config_filepath, 'w', encoding="utf8") as configfile:
