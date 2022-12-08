@@ -117,7 +117,26 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                         data_source:str=get_s1_default_provider(),
                         dem_source:str=get_srtm_1s_default_provider(),
                         production_id:str=None)->Tuple[int, str]:
+    """ Generate SAR ARD data from Sentinel-1 GRD products
 
+    Args:
+        s1_prd_ids (List[str]): List of Sentinel-1 products ID
+        s2_tile_id (str): Sentinel-2 MGRS ID
+        out_dirpath_root (Path, optional): Path where to wirte the SAR ARD data. Defaults to Path(gettempdir()).
+        working_dirpath_root (Path, optional): Path where to write temporary data. Defaults to Path(gettempdir()).
+        clean (bool, optional): Flag to indicate if you want clean directory or not. Defaults to True.
+        upload_outputs (bool, optional): Flag to indicate if you want upload or not the products. Defaults to True.
+        data_source (str, optional): Provide the source of Sentinel-1 GRD products. Defaults to get_s1_default_provider().
+        dem_source (str, optional): Provide the source of DEM. Defaults to get_srtm_1s_default_provider().
+        production_id (str, optional): Production ID. Defaults to None.
+
+    Raises:
+        S1DEMProcessorError: When error raise with the DEM retrieval
+        S1ARDProcessorError: When error raise with S1 ARD processing
+
+    Returns:
+        Tuple[int, str]: return the number of files uploaded and the s3 path
+    """
     if production_id is None:
         production_id=_get_default_prod_id()
         logger.debug('production id: %s', production_id)
