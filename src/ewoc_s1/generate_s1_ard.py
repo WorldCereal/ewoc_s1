@@ -1,11 +1,10 @@
 import logging
 from pathlib import Path
 import shutil
-from typing import List, Tuple, final
+from typing import List, Tuple
 
 from ewoc_dag.bucket.ewoc import EWOCARDBucket
 from ewoc_dag.s1_dag import get_s1_product, S1DagError
-from ewoc_dag.safe_format import S1SafeConversionError
 from s1tiling.S1Processor import s1_process
 
 from ewoc_s1 import EWOC_S1_INPUT_DOWNLOAD_ERROR, EWOC_S1_PROCESSOR_ERROR, EWOC_S1_ARD_FORMAT_ERROR, __version__
@@ -48,8 +47,7 @@ class S1ProcessorError(S1ARDProcessorBaseError):
     def __str__(self):
         if self._with_thermal_noise_removal:
             return f"{self._message} {self._s1_prd_ids} not process to {self._s2_tile_id} with S1 Tiling (with thermal noise removal)!"
-        else:
-            return f"{self._message} {self._s1_prd_ids} not process to {self._s2_tile_id} with S1 Tiling (without thermal noise removal)!"
+        return f"{self._message} {self._s1_prd_ids} not process to {self._s2_tile_id} with S1 Tiling (without thermal noise removal)!"
 
 class S1ARDFormatError(S1ARDProcessorBaseError):
     """Exception raised for errors in the S1 ARD generation at ARD format step."""
@@ -89,6 +87,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
     wd_s1process_noized_dirpath_root.mkdir(exist_ok=True)
     output_s1process_noized_dirpath = wd_s1process_noized_dirpath_root / s2_tile_id
 
+    s1_prd_ids_error=[]
     for s1_prd_id in s1_prd_ids:
         if S1PrdIdInfo.is_valid(s1_prd_id):
             if len(s1_prd_id.split('.'))==1:
@@ -97,10 +96,14 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
             s1_prd_wsafe_dirpath =  s1_input_dir / s1_prd_safe_dirpath.stem
             if not s1_prd_wsafe_dirpath.exists():
                 try:
-                    get_s1_product(s1_prd_id, out_root_dirpath=s1_input_dir, source=data_source, safe_format=True)
+                    get_s1_product(s1_prd_id,
+                        out_root_dirpath=s1_input_dir,
+                        source=data_source, safe_format=True)
                 except S1DagError as exc:
                     logger.warning(exc)
                     logger.warning('No product download for %s from %s', s1_prd_id, data_source)
+                    # Clean the products which generated the error
+                    s1_prd_ids_error.append(s1_prd_id.split('.')[0])
                     # Clean empty dir to avoid confusion from s1tiling
                     if s1_prd_safe_dirpath.exists():
                         s1_prd_safe_dirpath.rmdir()
@@ -117,11 +120,21 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                 logger.info('S1 prd %s is already available on disk', s1_prd_id)
         else:
             logger.warning('S1 prd id %s is not valid!', s1_prd_id)
-            # TODO remove the corresponding id from the list ?
+            s1_prd_ids_error.append(s1_prd_id.split('.')[0])
 
     if not any(s1_input_dir.iterdir()):
         s1_input_dir.rmdir()
         raise S1InputProcessorError(s1_prd_ids, data_source)
+
+    # Manage failed products
+    logger.warning("The following products are not available for processing: %s",  s1_prd_ids_error)
+    if len(s1_prd_ids)==len(s1_prd_ids_error):
+        raise S1InputProcessorError(s1_prd_ids, data_source)
+    if s1_prd_ids_error:
+        for s1_prd_id_error in s1_prd_ids_error:
+            logger.warning("Remove %s from the product ids list send to S1 processor",
+                            s1_prd_id_error)
+            s1_prd_ids.remove(s1_prd_id_error)
 
     try:
         s1_process(str(to_s1tiling_configfile(wd_s1process_dirpath_root,
@@ -134,7 +147,7 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         if clean:
             shutil.rmtree(s1_input_dir)
         raise S1ProcessorError(s1_prd_ids, s2_tile_id)
-   
+
     try:
         s1_process(str(to_s1tiling_configfile(wd_s1process_noized_dirpath_root,
                                             s1_input_dir,
