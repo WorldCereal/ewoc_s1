@@ -165,7 +165,11 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                         data_source=data_source, production_id=production_id)
     except S1ARDProcessorBaseError as exc:
         logger.error(exc)
-        raise S1ARDProcessorError(s2_tile_id, s1_prd_ids, data_source, exc.exit_code)
+        raise S1ARDProcessorError(s2_tile_id, s1_prd_ids, data_source, exc.exit_code) from exc
+    except BaseException as exc:
+        logger.critical(f"Unexpected {exc=}, {type(exc)=}")
+        print(f"Unexpected {exc=}, {type(exc)=}")
+        raise BaseException from exc
     finally:
         if clean:
             shutil.rmtree(working_dirpath)

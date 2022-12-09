@@ -168,12 +168,12 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                         S1PrdIdInfo(s1_prd_ids[0]), s2_tile_id,
                         rename_only=False, clean_input_file=clean)
         logger.info('Successful convertion to EWoC ARD format!')
+        print('Successful convertion to EWoC ARD format!')
     except:
         raise S1ARDFormatError(s1_prd_ids)
     finally:
         if clean:
             shutil.rmtree(wd_s1process_dirpath_root)
-            shutil.rmtree(s1_input_dir)
 
     if upload_outputs:
         try:
@@ -182,13 +182,17 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
                 EWOCARDBucket().upload_ard_prd(out_dirpath, production_id)
             logger.info("Succeed to upload %s S1 ARD files to %s",
                 nb_s1_ard_file, s1_ard_s3path)
+            print(f"INFO Succeed to upload {nb_s1_ard_file} S1 ARD files to {s1_ard_s3path}")
         except:
             logger.error('Push to EWoC ARD bucket failed!')
+            print('ERROR: Push to EWoC ARD bucket failed!')
             raise RuntimeError("Generate S1 ARD failed during the upload of ARD data to bucket")
+    else:
+        logger.info('No upload to bucket!')
+        print('INFO: No upload to bucket!')
 
-        # if sucess remove from disk the data pushed to the bucket
-        if clean:
-            shutil.rmtree(out_dirpath)
+    # if sucess remove from disk the data pushed to the bucket
+    if clean:
+        shutil.rmtree(out_dirpath)
 
-        return nb_s1_ard_file, s1_ard_s3path
-    return 2, ''
+    return nb_s1_ard_file, s1_ard_s3path
