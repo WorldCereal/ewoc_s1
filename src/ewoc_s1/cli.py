@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import shutil
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import Optional, List, Tuple
 
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
 from ewoc_dag.s1_dag import get_s1_default_provider
@@ -56,7 +56,7 @@ def generate_s1_ard_wp(work_plan_filepath:Path,
                        clean:bool=True, upload_outputs:bool=True,
                        data_source:str=get_s1_default_provider(),
                        dem_source:str=get_srtm_1s_default_provider(),
-                       production_id:str=None):
+                       production_id: Optional[str]=None):
 
     if production_id is None:
         logger.warning("Use computed production id but we must used the one in wp")
@@ -116,7 +116,7 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                         clean:bool=True, upload_outputs:bool=True,
                         data_source:str=get_s1_default_provider(),
                         dem_source:str=get_srtm_1s_default_provider(),
-                        production_id:str=None)->Tuple[int, str]:
+                        production_id: Optional[str]=None)->Tuple[int, str]:
     """ Generate SAR ARD data from Sentinel-1 GRD products
 
     Args:
@@ -178,11 +178,11 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
 # executable/script.
 
 
-def parse_args(args:List[str]):
+def parse_args(args_cli:List[str]):
     """Parse command line parameters
 
     Args:
-      args (List[str]): command line parameters as list of strings
+      args_cli (List[str]): command line parameters as list of strings
           (for example  ``["--help"]``).
 
     Returns:
@@ -251,7 +251,7 @@ def parse_args(args:List[str]):
         help="EWoC workplan in json format",
         type=Path)
 
-    args = parser.parse_args(args)
+    args = parser.parse_args(args_cli)
 
     if args.subparser_name is None:
         parser.print_help()
@@ -271,17 +271,17 @@ def setup_logging(loglevel):
     )
 
 
-def main(args:List[str]):
+def main(args_cli:List[str]):
     """Wrapper allowing :func:`generate_s1_ard` to be called with string arguments in a CLI fashion
 
     Instead of returning the value from :func:`fib`, it prints the result to the
     ``stdout`` in a nicely formatted message.
 
     Args:
-      args (List[str]): command line parameters as list of strings
+      args_cli (List[str]): command line parameters as list of strings
           (for example  ``["--verbose", "42"]``).
     """
-    args = parse_args(args)
+    args = parse_args(args_cli)
     setup_logging(args.loglevel)
     logger.debug(args)
 

@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 import shutil
-from typing import List, Tuple
+from typing import Optional, List, Tuple
 
 from ewoc_dag.bucket.ewoc import EWOCARDBucket
 from ewoc_dag.s1_dag import get_s1_product, S1DagError
@@ -62,7 +62,7 @@ class S1ARDFormatError(S1ARDProcessorBaseError):
 def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Path,
                     dem_dirpath: Path, working_dirpath: Path,
                     clean: bool=True, upload_outputs: bool=True, data_source:str='creodias',
-                    production_id:str=None)-> Tuple[int, str]:
+                    production_id: Optional[str]=None)-> Tuple[int, str]:
 
     """ Generate S1 ARD from the products identified by their product id for the S2 tile id
     """
