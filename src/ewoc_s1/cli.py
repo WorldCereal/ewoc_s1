@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import shutil
 from tempfile import gettempdir
-from typing import List, Tuple
+from typing import Optional, List, Tuple
 
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
 from ewoc_dag.copdem import get_copdem_from_s2_tile_id
@@ -57,7 +57,7 @@ def generate_s1_ard_wp(work_plan_filepath:Path,
                        clean:bool=True, upload_outputs:bool=True,
                        data_source:str=get_s1_default_provider(),
                        dem_source:str=get_srtm_1s_default_provider(),
-                       production_id:str=None):
+                       production_id: Optional[str]=None):
 
     if production_id is None:
         logger.warning("Use computed production id but we must used the one in wp")
@@ -117,8 +117,27 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                         clean:bool=True, upload_outputs:bool=True,
                         data_source:str=get_s1_default_provider(),
                         dem_source:str=get_srtm_1s_default_provider(),
-                        production_id:str=None)->Tuple[int, str]:
+                        production_id: Optional[str]=None)->Tuple[int, str]:
+    """ Generate SAR ARD data from Sentinel-1 GRD products
 
+    Args:
+        s1_prd_ids (List[str]): List of Sentinel-1 products ID
+        s2_tile_id (str): Sentinel-2 MGRS ID
+        out_dirpath_root (Path, optional): Path where to wirte the SAR ARD data. Defaults to Path(gettempdir()).
+        working_dirpath_root (Path, optional): Path where to write temporary data. Defaults to Path(gettempdir()).
+        clean (bool, optional): Flag to indicate if you want clean directory or not. Defaults to True.
+        upload_outputs (bool, optional): Flag to indicate if you want upload or not the products. Defaults to True.
+        data_source (str, optional): Provide the source of Sentinel-1 GRD products. Defaults to get_s1_default_provider().
+        dem_source (str, optional): Provide the source of DEM. Defaults to get_srtm_1s_default_provider().
+        production_id (str, optional): Production ID. Defaults to None.
+
+    Raises:
+        S1DEMProcessorError: When error raise with the DEM retrieval
+        S1ARDProcessorError: When error raise with S1 ARD processing
+
+    Returns:
+        Tuple[int, str]: return the number of files uploaded and the s3 path
+    """
     if production_id is None:
         production_id=_get_default_prod_id()
         logger.debug('production id: %s', production_id)
@@ -157,7 +176,11 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
                         data_source=data_source, production_id=production_id)
     except S1ARDProcessorBaseError as exc:
         logger.error(exc)
-        raise S1ARDProcessorError(s2_tile_id, s1_prd_ids, data_source, exc.exit_code)
+        raise S1ARDProcessorError(s2_tile_id, s1_prd_ids, data_source, exc.exit_code) from exc
+    except BaseException as exc:
+        logger.critical(f"Unexpected {exc=}, {type(exc)=}")
+        print(f"Unexpected {exc=}, {type(exc)=}")
+        raise BaseException from exc
     finally:
         if clean:
             shutil.rmtree(working_dirpath)
@@ -170,11 +193,11 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
 # executable/script.
 
 
-def parse_args(args:List[str]):
+def parse_args(args_cli:List[str]):
     """Parse command line parameters
 
     Args:
-      args (List[str]): command line parameters as list of strings
+      args_cli (List[str]): command line parameters as list of strings
           (for example  ``["--help"]``).
 
     Returns:
@@ -243,7 +266,7 @@ def parse_args(args:List[str]):
         help="EWoC workplan in json format",
         type=Path)
 
-    args = parser.parse_args(args)
+    args = parser.parse_args(args_cli)
 
     if args.subparser_name is None:
         parser.print_help()
@@ -263,17 +286,17 @@ def setup_logging(loglevel):
     )
 
 
-def main(args:List[str]):
+def main(args_cli:List[str]):
     """Wrapper allowing :func:`generate_s1_ard` to be called with string arguments in a CLI fashion
 
     Instead of returning the value from :func:`fib`, it prints the result to the
     ``stdout`` in a nicely formatted message.
 
     Args:
-      args (List[str]): command line parameters as list of strings
+      args_cli (List[str]): command line parameters as list of strings
           (for example  ``["--verbose", "42"]``).
     """
-    args = parse_args(args)
+    args = parse_args(args_cli)
     setup_logging(args.loglevel)
     logger.debug(args)
 
