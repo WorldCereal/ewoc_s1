@@ -9,7 +9,7 @@ from tempfile import gettempdir
 from typing import Optional, List, Tuple
 
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
-from ewoc_dag.copdem import get_copdem_from_s2_tile_id
+from ewoc_dag.copdem_dag import get_copdem_from_s2_tile_id
 from ewoc_dag.s1_dag import get_s1_default_provider
 
 from ewoc_s1 import EWOC_S1_DEM_DOWNLOAD_ERROR, EWOC_S1_UNEXPECTED_ERROR, __version__
