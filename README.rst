@@ -3,7 +3,7 @@ ewoc_s1
 =======
 
 
-The ewoc_s1 python package provide the python cli and API to process Sentinel-1 to the EWoC ARD format.
+The ewoc_s1 python package provide the python cli and API to process Sentinel-1 L1 GRD to the EWoC ARD format.
 
 Description
 ===========
@@ -11,9 +11,9 @@ Description
 To generate EWoC ARD, the ewoc_s1 CLI perform the following tasks:
 
 * Read or retrieve inputs S1 product ID from CLI arguments or from the worplan file
-* Retrieve the SRTM 1s data from `ESA Website <http://step.esa.int/auxdata/dem/SRTMGL1/>`_ or creodias data bucket or local ewoc bucket 
+* Retrieve the SRTM 1s data from `ESA Website <http://step.esa.int/auxdata/dem/SRTMGL1/>`_ or creodias data bucket or ewoc bucket (on aws or creodias) 
 * Download the S1 product ID from
-  * creodias s3 bucket
+  * creodias or aws s3 bucket
   * from api thanks to `EODAG <https://eodag.readthedocs.io/en/stable/#>`_ and `ewoc_dag <https://github.com/WorldCereal/ewoc_dataship>`_ if needed
 * Perform S1 calibration and projection to S2 grid thanks to `S1Tiling <https://gitlab.orfeo-toolbox.org/s1-tiling/s1tiling>`_ 
 * Perform the same operation with thermal noise removal deactivated to identify no acquisition data and to follow snap convention about thermal noise
