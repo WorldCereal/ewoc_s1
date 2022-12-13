@@ -175,6 +175,8 @@ def generate_s1_ard(s1_prd_ids: List[str], s2_tile_id: str, out_dirpath_root: Pa
         if clean:
             shutil.rmtree(wd_s1process_dirpath_root)
 
+    nb_s1_ard_file= 0
+    s1_ard_s3path=''
     if upload_outputs:
         try:
             logger.info('Try to push %s to EWoC ARD bucket', out_dirpath)
