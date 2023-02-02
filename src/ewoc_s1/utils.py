@@ -28,8 +28,10 @@ def to_s1tiling_configfile(out_dirpath: Path,
     config = configparser.ConfigParser()
     config['Paths'] = {'output': str(out_dirpath),
                        's1_images': str(s1_input_dirpath),
-                       'srtm': str(dem_dirpath),
-                       'tmp': str(working_dirpath)}
+                       'dem': str(dem_dirpath),
+                       'tmp': str(working_dirpath),
+                       'dem_database': '/home/msavinau/dev/ewoc/ewoc_s1/srtm_tiles_cop.gpkg',
+                       'dem_format':'{id}.tif'}
 
     if log_level < logging.DEBUG:
         s1_process_log_mode = 'debug' + ' ' + 'logging'
