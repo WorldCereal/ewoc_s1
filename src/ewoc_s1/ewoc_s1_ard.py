@@ -86,7 +86,7 @@ def to_ewoc_s1_raster(s1_process_filepath, ewoc_filepath,
     msk = otb.Registry.CreateApplication("BandMath")
     msk.SetParameterStringList("il", [str(s1_process_filepath), str(s1_process_noized_filepath)])
     msk.SetParameterString("out", str(s1_process_filepath))
-    mask_exp = "im2b1==0?" + str(nodata_out) + ":(im1b1==0?im2b1:im1b1)"
+    mask_exp = "im2b1==0?" + str(nodata_out) + ":(im1b1<1.01e-7?im2b1:im1b1)"
     msk.SetParameterString("exp", mask_exp)
     msk.ExecuteAndWriteOutput()
 
