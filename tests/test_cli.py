@@ -20,14 +20,14 @@ class Test_Cli(unittest.TestCase):
         """Products ok"""
         (a,b) =generate_s1_ard_from_pids(['S1A_IW_GRDH_1SDV_20181102T153633_20181102T153700_024411_02ACA1_105A',
                                           'S1A_IW_GRDH_1SDV_20181102T153608_20181102T153633_024411_02ACA1_2B2C'],
-                                         '36TWR',dem_source='ewoc',data_source='aws')
+                                         '36TWR',dem_source='ewoc',data_source='aws',clean=False)
         print(f'{a} - {b}')
 
     def test_cli_safe(self):
         """Products with SAFE ID"""
         (a,b)=generate_s1_ard_from_pids(['S1A_IW_GRDH_1SDV_20210708T060040_20210708T060105_038682_04908E_3178.SAFE',
                                          'S1A_IW_GRDH_1SDV_20210708T060105_20210708T060130_038682_04908E_8979.SAFE'],
-                                        '31TCJ',dem_source='esa',data_source='aws')
+                                        '31TCJ',dem_source='esa',data_source='aws', clean=False)
         print(f'{a} - {b}')
 
     def test_cli_one_missing_product(self):
@@ -63,12 +63,25 @@ class Test_Cli(unittest.TestCase):
                                        'S1A_IW_GRDH_1SDV_20210310T055625_20210310T055650_036932_045843_0613'],
                                       '32VKN',dem_source='ewoc',data_source='aws')
 
-    def test_cli_cop_dem(self):
-        """test with cop dem retrieve from aws bucket : Need to be fixed!"""
+    def test_cli_cop_dem_32VKN(self):
+        """Test with cop dem retrieve from aws bucket.
+
+        The 32VKN tile is outside the srtm coverage
+        """
         with self.assertRaises(S1DEMProcessorError):
             generate_s1_ard_from_pids(['S1A_IW_GRDH_1SDV_20210310T055600_20210310T055625_036932_045843_9A14',
                                        'S1A_IW_GRDH_1SDV_20210310T055625_20210310T055650_036932_045843_0613'],
-                                      '32VKN',dem_source='aws',data_source='aws')
+                                      '32VKN',dem_source='aws',data_source='aws', clean=False)
+
+
+    def test_cli_cop_dem_31TCJ(self):
+        """Test with cop dem retrieve from aws bucket
+
+        The 31TCJ tile is inside the srtm coverage (used for comparison)
+        """
+        (a,b)=generate_s1_ard_from_pids(['S1A_IW_GRDH_1SDV_20210708T060040_20210708T060105_038682_04908E_3178',
+                                         'S1A_IW_GRDH_1SDV_20210708T060105_20210708T060130_038682_04908E_8979'],
+                                        '31TCJ',dem_source='aws',data_source='aws', clean=False)
 
 if __name__ == "__main__":
     unittest.main()
