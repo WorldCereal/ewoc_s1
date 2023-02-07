@@ -31,6 +31,8 @@ Usage
 To download and upload data you need to configure some env variable from *ewoc_dag*
  as described `here <https://github.com/WorldCereal/ewoc_dataship#usage>`.
 
+You need also to set the path to the dem id database via the environment variable EWOC_S1_DEM_DB
+
 CLI
 ----
 

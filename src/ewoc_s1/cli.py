@@ -9,6 +9,7 @@ from tempfile import gettempdir
 from typing import Optional, List, Tuple
 
 from ewoc_dag.srtm_dag import get_srtm_from_s2_tile_id, get_srtm_1s_default_provider
+from ewoc_dag.copdem_dag import get_copdem_from_s2_tile_id
 from ewoc_dag.s1_dag import get_s1_default_provider
 
 from ewoc_s1 import EWOC_S1_DEM_DOWNLOAD_ERROR, EWOC_S1_UNEXPECTED_ERROR, __version__
@@ -148,9 +149,11 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
         dem_dirpath = working_dirpath / 'dem' / s2_tile_id
         dem_dirpath.mkdir(exist_ok=True, parents=True)
         try:
-            get_srtm_from_s2_tile_id(s2_tile_id,
-                out_dirpath= dem_dirpath,
-                source=dem_source, resolution='1s')
+            get_copdem_from_s2_tile_id(s2_tile_id, dem_dirpath, source=dem_source)
+            for dem_path in dem_dirpath.rglob('Copernicus_DSM_COG_10*.tif'):
+                # Convert the name to the requested one by db id
+                dem_filepath= dem_path.parent /(dem_path.stem.split('_')[4]+dem_path.stem.split('_')[6]+'.tif')
+                dem_path.rename(dem_filepath)
         except:
             logger.error('No elevation available!')
             raise S1DEMProcessorError(f'No elevation for {s2_tile_id} from {dem_source}')

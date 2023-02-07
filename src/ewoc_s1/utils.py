@@ -1,14 +1,33 @@
 import configparser
 import json
 import logging
+from os import getenv
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from psutil import cpu_count, virtual_memory
 
 from ewoc_s1.s1_prd_id import S1PrdIdInfo
 
 logger = logging.getLogger(__name__)
+
+def getenv_path(key:str, default_path:Optional[Path]=None, exists = True)->Path:
+    if default_path is None:
+        env_val = getenv(key)
+    else:
+        env_val = getenv(key, default=str(default_path))
+    env_val_str=''
+    if env_val is None:
+        raise ValueError('The environment variable {env_var} is not set!')
+    elif env_val == str(default_path):
+        logger.info(f'The environment variable {key} is not set but the default path value is used: {default_path}!')
+
+    env_val_str = str(env_val)
+    env_val_path = Path(env_val_str)
+    if exists is True and not env_val_path.exists():
+        raise ValueError(f'The environment variable {key} is set but the path does not exist: {env_val_path}!')
+    return env_val_path
+
 
 def to_s1tiling_configfile(out_dirpath: Path,
                            s1_input_dirpath: Path,
@@ -25,11 +44,14 @@ def to_s1tiling_configfile(out_dirpath: Path,
     optimal_ram, optimal_nb_process, optimal_nb_otb_threads = \
         cluster_config.compute_optimal_cluster_config()
 
+    dem_database_filepath = getenv_path('EWOC_S1_DEM_DB')
     config = configparser.ConfigParser()
     config['Paths'] = {'output': str(out_dirpath),
                        's1_images': str(s1_input_dirpath),
-                       'srtm': str(dem_dirpath),
-                       'tmp': str(working_dirpath)}
+                       'dem': str(dem_dirpath),
+                       'tmp': str(working_dirpath),
+                       'dem_database': str(dem_database_filepath),
+                       'dem_format':'{id}.tif'}
 
     if log_level < logging.DEBUG:
         s1_process_log_mode = 'debug' + ' ' + 'logging'
