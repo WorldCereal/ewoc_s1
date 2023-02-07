@@ -150,18 +150,10 @@ def generate_s1_ard_from_pids(s1_prd_ids:List[str], s2_tile_id:str,
         dem_dirpath.mkdir(exist_ok=True, parents=True)
         try:
             get_copdem_from_s2_tile_id(s2_tile_id, dem_dirpath, source=dem_source)
-            for dem_path in dem_dirpath.rglob('*.tif'):
-                logger.info('%s',dem_path)
-                filename_ws=dem_path.stem.split('_')
-                logger.info('%s',filename_ws)
+            for dem_path in dem_dirpath.rglob('Copernicus_DSM_COG_10*.tif'):
+                # Convert the name to the requested one by db id
                 dem_filepath= dem_path.parent /(dem_path.stem.split('_')[4]+dem_path.stem.split('_')[6]+'.tif')
-                logger.info('%s',dem_filepath)
                 dem_path.rename(dem_filepath)
-            dem_paths = list(dem_dirpath.rglob('*.tif'))
-            logger.info('%s', dem_paths)
-            #get_srtm_from_s2_tile_id(s2_tile_id,
-            #    out_dirpath= dem_dirpath,
-            #    source=dem_source, resolution='1s')
         except:
             logger.error('No elevation available!')
             raise S1DEMProcessorError(f'No elevation for {s2_tile_id} from {dem_source}')

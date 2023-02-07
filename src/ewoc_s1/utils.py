@@ -26,15 +26,18 @@ def to_s1tiling_configfile(out_dirpath: Path,
     optimal_ram, optimal_nb_process, optimal_nb_otb_threads = \
         cluster_config.compute_optimal_cluster_config()
 
-    dem_database_filepath=Path(getenv('EWOC_S1_DEM_DB'))
-    if dem_database_filepath is None or not dem_database_filepath.exists():
+    dem_database_filepath=getenv('EWOC_S1_DEM_DB')
+    if dem_database_filepath is None:
         raise ValueError(f'The DEM database is not correctly provided: {dem_database_filepath}')
+    dem_database_filepath = Path(str(dem_database_filepath))
+    if not dem_database_filepath.exists():
+        raise ValueError(f'The DEM database does not exist: {dem_database_filepath}')
     config = configparser.ConfigParser()
     config['Paths'] = {'output': str(out_dirpath),
                        's1_images': str(s1_input_dirpath),
                        'dem': str(dem_dirpath),
                        'tmp': str(working_dirpath),
-                       'dem_database': str(dem_database_filepath),
+                       'dem_database': dem_database_filepath,
                        'dem_format':'{id}.tif'}
 
     if log_level < logging.DEBUG:
